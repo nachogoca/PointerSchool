@@ -1,0 +1,37 @@
+html {
+    background-color: #808080;
+    }
+body {
+    font-family: "Lucida Console";
+    font-size: 14px;
+    color: #0f0;
+    }
+#in {
+    
+    }
+#console {
+    display: block;
+    position: fixed;
+    left: 10px;
+    top: 50%;
+    width: 50%;
+    height: 35%;
+    padding: 8px;
+    border-color: #fff;
+    border-width: 1px 0 0 0 0;
+    background-color: #000;
+    color: #fff;
+}
+.CodeMirror { 
+    left: 10px;
+    width: 50%;
+    height: 400px;
+    border: 1px solid #ddd; 
+}
+.CodeMirror-scroll { 
+    max-height: 500px; 
+}
+.CodeMirror pre { 
+    padding-left: 0px; 
+    line-height: 1.25; 
+}
