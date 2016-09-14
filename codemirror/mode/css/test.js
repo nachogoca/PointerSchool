@@ -6,7 +6,7 @@
   function MT(name) { test.mode(name, mode, Array.prototype.slice.call(arguments, 1)); }
 
   // Error, because "foobarhello" is neither a known type or property, but
-  // property was expected (after "and"), and it should be in parentheses.
+  // property was expected (after "and"), and it should be in parenthese.
   MT("atMediaUnknownType",
      "[def @media] [attribute screen] [keyword and] [error foobarhello] { }");
 
@@ -17,12 +17,6 @@
   // Make sure nesting works with media queries
   MT("atMediaMaxWidthNested",
      "[def @media] [attribute screen] [keyword and] ([property max-width]: [number 25px]) { [tag foo] { } }");
-
-  MT("atMediaFeatureValueKeyword",
-     "[def @media] ([property orientation]: [keyword landscape]) { }");
-
-  MT("atMediaUnknownFeatureValueKeyword",
-     "[def @media] ([property orientation]: [error upsidedown]) { }");
 
   MT("tagSelector",
      "[tag foo] { }");
@@ -55,17 +49,11 @@
   MT("tagColorHex3",
      "[tag foo] { [property background]: [atom #fff]; }");
 
-  MT("tagColorHex4",
-     "[tag foo] { [property background]: [atom #ffff]; }");
-
   MT("tagColorHex6",
      "[tag foo] { [property background]: [atom #ffffff]; }");
 
-  MT("tagColorHex8",
-     "[tag foo] { [property background]: [atom #ffffffff]; }");
-
-  MT("tagColorHex5Invalid",
-     "[tag foo] { [property background]: [atom&error #fffff]; }");
+  MT("tagColorHex4",
+     "[tag foo] { [property background]: [atom&error #ffff]; }");
 
   MT("tagColorHexInvalid",
      "[tag foo] { [property background]: [atom&error #ffg]; }");
@@ -87,6 +75,13 @@
 
   MT("tagTwoPropertiesURL",
      "[tag foo] { [property background]: [atom url]([string //example.com/foo.png]); [property padding]: [number 0]; }");
+
+  MT("commentSGML",
+     "[comment <!--comment-->]");
+
+  MT("commentSGML2",
+     "[comment <!--comment]",
+     "[comment -->] [tag div] {}");
 
   MT("indent_tagSelector",
      "[tag strong], [tag em] {",
@@ -126,12 +121,12 @@
      "}");
 
   MT("empty_url",
-     "[def @import] [atom url]() [attribute screen];");
+     "[def @import] [tag url]() [tag screen];");
 
   MT("parens",
      "[qualifier .foo] {",
      "  [property background-image]: [variable fade]([atom #000], [number 20%]);",
-     "  [property border-image]: [atom linear-gradient](",
+     "  [property border-image]: [variable linear-gradient](",
      "    [atom to] [atom bottom],",
      "    [variable fade]([atom #000], [number 20%]) [number 0%],",
      "    [variable fade]([atom #000], [number 20%]) [number 100%]",
@@ -143,7 +138,7 @@
      "  [variable-2 --main-color]: [atom #06c];",
      "}",
      "[tag h1][builtin #foo] {",
-     "  [property color]: [atom var]([variable-2 --main-color]);",
+     "  [property color]: [variable var]([variable-2 --main-color]);",
      "}");
 
   MT("supports",
@@ -162,7 +157,7 @@
       "    [tag foo] {",
       "      [property font-family]: [variable Verdana], [atom sans-serif];",
       "    }",
-      "}");
+      "  }");
 
    MT("document_url",
       "[def @document] [tag url]([string http://blah]) { [qualifier .class] { } }");
@@ -175,26 +170,4 @@
 
    MT("document_regexp",
       "[def @document] [tag regexp]([string \".*blah.+\"]) { [builtin #id] { } }");
-
-   MT("counter-style",
-      "[def @counter-style] [variable binary] {",
-      "  [property system]: [atom numeric];",
-      "  [property symbols]: [number 0] [number 1];",
-      "  [property suffix]: [string \".\"];",
-      "  [property range]: [atom infinite];",
-      "  [property speak-as]: [atom numeric];",
-      "}");
-
-   MT("counter-style-additive-symbols",
-      "[def @counter-style] [variable simple-roman] {",
-      "  [property system]: [atom additive];",
-      "  [property additive-symbols]: [number 10] [variable X], [number 5] [variable V], [number 1] [variable I];",
-      "  [property range]: [number 1] [number 49];",
-      "}");
-
-   MT("counter-style-use",
-      "[tag ol][qualifier .roman] { [property list-style]: [variable simple-roman]; }");
-
-   MT("counter-style-symbols",
-      "[tag ol] { [property list-style]: [atom symbols]([atom cyclic] [string \"*\"] [string \"\\2020\"] [string \"\\2021\"] [string \"\\A7\"]); }");
 })();

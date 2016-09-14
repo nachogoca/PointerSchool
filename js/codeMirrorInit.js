@@ -15,23 +15,25 @@ window.onload = function init(){
     
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
-        mode: "clike",
-        matchBrackets: true
+        styleActiveLine: true,
+        theme: 'eclipse',
+        mode: 'text/x-csrc',
+        matchBrackets: true,
+        extraKeys: {
+        "Ctrl-Space": "autocomplete"
+        }
     });
     
     var console = CodeMirror.fromTextArea(document.getElementById("console"), {
         readOnly: true,
-        theme: '3024-night'
+        theme: '3024-night',
+        mode: 'none'
     });
     
+    /*
     editor.on("change", function(){
         console.setValue(editor.getValue());
         document.getElementById('console').textContent = editor.getValue();
-    });
-    
-    editor.setOption("extraKeys", {
-        "Ctrl-Space": "autocomplete"
-    });
-    
+    });*/
     
 }

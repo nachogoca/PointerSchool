@@ -148,79 +148,49 @@ section.first {
   z-index: 25;
 }
 
-.yinyang {
+.bankinfo {
+  text-align: left;
+  display: none;
+  padding: 0 .5em;
   position: absolute;
-  top: -10px;
-  left: 0; right: 0;
-  margin: auto;
-  display: block;
-  height: 120px;
+  border: 2px solid #aaa;
+  border-radius: 5px;
+  background: #eee;
+  top: 10px;
+  left: 30px;
 }
 
-.actions {
-  margin: 1em 0 0;
-  min-height: 100px;
-  position: relative;
-}
-
-.actionspicture {
-  pointer-events: none;
+.bankinfo_close {
   position: absolute;
-  height: 100px;
-  top: 0; left: 0; right: 0;
-}
-
-.actionlink {
-  pointer-events: auto;
-  font-family: arial;
-  font-size: 80%;
+  top: 0; right: 6px;
   font-weight: bold;
-  position: absolute;
-  top: 0; bottom: 0;
-  line-height: 1;
-  height: 1em;
-  margin: auto;
+  cursor: pointer;
 }
 
-.actionlink.download {
+.bigbutton {
+  cursor: pointer;
+  text-align: center;
+  padding: 0 1em;
+  display: inline-block;
   color: white;
-  right: 50%;
-  margin-right: 13px;
-  text-shadow: -1px 1px 3px #b00, -1px -1px 3px #b00, 1px 0px 3px #b00;
+  position: relative;
+  line-height: 1.9;
+  color: white !important;
+  background: #A21313;
 }
 
-.actionlink.fund {
-  color: #b00;
-  left: 50%;
-  margin-left: 15px;
+.bigbutton.right {
+  border-bottom-left-radius: 100px;
+  border-top-left-radius: 100px;
 }
 
-.actionlink:hover {
-  text-decoration: underline;
+.bigbutton.left {
+  border-bottom-right-radius: 100px;
+  border-top-right-radius: 100px;
 }
 
-.actionlink a {
-  color: inherit;
-}
-
-.actionsleft {
-  float: left;
-}
-
-.actionsright {
-  float: right;
-  text-align: right;
-}
-
-@media screen and (max-width: 800px) {
-  .actions {
-    padding-top: 120px;
-  }
-  .actionsleft, .actionsright {
-    float: none;
-    text-align: left;
-    margin-bottom: 1em;
-  }
+.bigbutton:hover {
+  background: #E30808;
 }
 
 th {

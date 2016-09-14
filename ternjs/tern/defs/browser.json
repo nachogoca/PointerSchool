@@ -3172,11 +3172,6 @@
     "!url": "https://developer.mozilla.org/en/docs/DOM/window.getComputedStyle",
     "!doc": "Gives the final used values of all the CSS properties of an element."
   },
-  "if": {
-    "!type": "fn(value)",
-    "!url": "www.google.com",
-    "!doc": "If function"
-  },
   "CanvasRenderingContext2D": {
     "canvas": "+Element",
     "width": "number",
