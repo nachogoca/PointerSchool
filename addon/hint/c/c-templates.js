@@ -16,11 +16,11 @@
             "template": "typedef ${definedDataType} ${NewName};${cursor}"
         },{
             "name": "typedef",
-            "description": "Creates a synonim for a struct.",
+            "description": "Creates a synonym for a struct.",
             "template": "typedef struct ${structName} ${NewName};${cursor}"
         },{
             "name": "typedef",
-            "description": "Creates a synonim for a struct pointer.",
+            "description": "Creates a synonym for a struct pointer.",
             "template": "typedef struct ${structName}* ${NewPtrName};${cursor}"
         },{
             "name": "for",
