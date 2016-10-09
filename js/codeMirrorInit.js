@@ -13,6 +13,10 @@ window.onload = function init(){
         CodeMirror.showHint(cm, myHint);
     }
     
+    CodeMirror.commands.evaluate = function(cm) {
+        evaluateText(console, editor.getValue());  
+    }
+    
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
         styleActiveLine: true,
@@ -20,7 +24,8 @@ window.onload = function init(){
         mode: 'text/x-csrc',
         matchBrackets: true,
         extraKeys: {
-        "Ctrl-Space": "autocomplete"
+            "Ctrl-Space": "autocomplete",
+            "Ctrl-Enter": "evaluate"
         }
     });
     
@@ -35,5 +40,20 @@ window.onload = function init(){
         console.setValue(editor.getValue());
         document.getElementById('console').textContent = editor.getValue();
     });*/
+    
+}
+
+function evaluateText(consoleWindow, text) {
+
+    
+    var ast;
+    
+    try{
+        ast = ansic.parse(text);
+        consoleWindow.setValue(ast);
+        console.log(ast);
+    } catch (exception) {
+        consoleWindow.setValue("Parse Error: " + exception.message);
+    }
     
 }
