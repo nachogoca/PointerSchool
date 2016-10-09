@@ -7703,7 +7703,7 @@
       }
     }
     return result;
-  } : function(string){return string.split(/\r\n?|\n/);};
+  } : function(stringresult){return (stringresult+'').split(/\r\n?|\n/);};
 
   var hasSelection = window.getSelection ? function(te) {
     try { return te.selectionStart != te.selectionEnd; }

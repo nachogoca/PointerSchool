@@ -9,11 +9,7 @@
         },{
             "name": "struct",
             "description": "A structure is an object of a sequence of named members of various types.",
-            "template": "struct ${structName} {\n\t${type} ${variableName};\n\tstruct ${structName}* ${selfReference};\n}${cursor}"
-        },{
-            "name": "struct",
-            "description": "A structure is an object of a sequence of named members of various types.",
-            "template": "struct ${structName} {\n\t${type} ${variableName};\n\tstruct ${structName}* ${selfReference1};\n\tstruct ${structName}* ${selfReference2};\n}${cursor}"
+            "template": "struct ${structName} {\n\t${type} ${variableName};\n\tstruct ${otherStructName}* ${reference};\n}${cursor}"
         },{
             "name": "typedef",
             "description": "Creates new data type names.",
