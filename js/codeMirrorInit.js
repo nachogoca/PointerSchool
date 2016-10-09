@@ -35,11 +35,6 @@ window.onload = function init(){
         mode: 'none'
     });
     
-    /*
-    editor.on("change", function(){
-        console.setValue(editor.getValue());
-        document.getElementById('console').textContent = editor.getValue();
-    });*/
     
 }
 

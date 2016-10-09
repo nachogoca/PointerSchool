@@ -499,11 +499,11 @@ jump_statement
 
 translation_unit
 	: external_declaration -> [$1]
-	| translation_unit external_declaration -> [$1]
+	| translation_unit external_declaration -> [$1, $2]
 	;
 
 external_declaration
-	: function_definition
+	: function_definition -> [$1]
 	| declaration -> [$1]
 	;
 

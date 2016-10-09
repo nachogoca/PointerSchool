@@ -96,10 +96,10 @@ break;
 case 16:
 this.$ = ["type:postfix_expression",$$[$0]];
 break;
-case 28: case 80: case 84: case 86: case 93: case 95: case 96: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 110: case 114: case 132: case 133: case 205: case 208:
+case 28: case 80: case 84: case 86: case 93: case 95: case 96: case 97: case 98: case 99: case 100: case 101: case 102: case 103: case 104: case 110: case 114: case 132: case 133: case 205: case 207: case 208:
 this.$ = [$$[$0]];
 break;
-case 76: case 81: case 206:
+case 76: case 81:
 this.$ = [$$[$0-1]];
 break;
 case 77:
@@ -111,7 +111,7 @@ break;
 case 105:
 this.$ = ["type:struct_or_union_specifier", $$[$0-4], $$[$0-3], $$[$0-2], $$[$0-1], $$[$0]];
 break;
-case 107:
+case 107: case 206:
 this.$ = [$$[$0-1], $$[$0]];
 break;
 case 112:
