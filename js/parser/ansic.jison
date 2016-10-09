@@ -83,7 +83,7 @@
 [_a-zA-Z][_a-zA-Z0-9]*  return 'IDENTIFIER' 
 
 
-/* \"[^"]+\"               return 'STRING_LITERAL' */
+\"[^"]+\"               return 'STRING_LITERAL'
 
 <<EOF>>               return 'EOF'
 .                     return 'INVALID'
@@ -109,7 +109,7 @@
 
 start
 	: translation_unit EOF 
-		{ typeof console !== 'undefined' ? console.log($1) : print($1);
+		{ /*typeof console !== 'undefined' ? console.log($1) : print($1);*/
           return $$; }
 	;
 

@@ -91,7 +91,27 @@
     <body> 
         <section id=notebook>
             <form style="position: relative; margin-top: .5em;">
-                <textarea id=code>/* Insert code here. Remember to press Ctrl-Space to enable autocomplete. */</textarea>
+                <textarea id=code>
+struct Books {
+   char  title[50];
+   char  author[50];
+   char  subject[100];
+   int   book_id;
+};
+
+int main( ) {
+
+   struct Books Book1;       
+   struct Books Book2;       
+ 
+   strcpy( Book1.title, "C Programming");
+   strcpy( Book1.author, "Nuha Ali"); 
+   strcpy( Book1.subject, "C Programming Tutorial");
+   Book1.book_id = 6495407;
+
+
+   return 0;
+}</textarea>
             </form>
             <form style="position: relative; margin-top: .5em;">
                 <textarea id=console>Welcome to console.</textarea>
