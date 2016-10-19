@@ -153,16 +153,16 @@ unary_expression
 
 unary_operator
 	: '&' -> [$1]
-	| '*'
-	| '+'
-	| '-'
-	| '~'
-	| '!'
+	| '*' -> [$1]
+	| '+' -> [$1]
+	| '-' -> [$1]
+	| '~' -> [$1]
+	| '!' -> [$1]
 	;
 
 cast_expression
 	: unary_expression -> [$1]
-	| '(' type_name ')' cast_expression
+	| '(' type_name ')' cast_expression // TODO Make cast
 	;
 
 multiplicative_expression
@@ -187,7 +187,12 @@ multiplicative_expression
             throw new TypeError("Arguments of multiplication must be numbers.");
         }
         
-        $$ = ~~(mul / cast);
+        // If both are integers
+        if(mul % 1 === 0 && cast % 1 === 0){
+            $$ = ~~(mul / cast);
+        } else {
+            $$ = mul / cast;
+        }
     }
 	| multiplicative_expression '%' cast_expression
     {
