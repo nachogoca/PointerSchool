@@ -179,7 +179,27 @@ multiplicative_expression
         $$ = mul * cast;
     }
 	| multiplicative_expression '/' cast_expression
+    {
+        mul = Number($multiplicative_expression);
+        cast = Number($cast_expression);
+        
+        if(isNaN(mul) || isNaN(cast)){
+            throw new TypeError("Arguments of multiplication must be numbers.");
+        }
+        
+        $$ = ~~(mul / cast);
+    }
 	| multiplicative_expression '%' cast_expression
+    {
+        mul = Number($multiplicative_expression);
+        cast = Number($cast_expression);
+        
+        if(isNaN(mul) || isNaN(cast)){
+            throw new TypeError("Arguments of multiplication must be numbers.");
+        }
+        
+        $$ = mul % cast;
+    }
 	;
 
 additive_expression
@@ -283,7 +303,7 @@ expression
 	;
 
 constant_expression
-	: conditional_expression
+	: conditional_expression -> [$1]
 	;
 
 declaration
@@ -307,17 +327,13 @@ init_declarator
 	: declarator -> [$1]
 	| declarator '=' initializer
     {
-        addDictionary($declarator,0);
+        addDictionary($declarator, $initializer);
         console.log("Add to dictionary");
     }
 	;
 
 storage_class_specifier
 	: TYPEDEF
-	| EXTERN
-	| STATIC
-	| AUTO
-	| REGISTER
 	;
 
 type_specifier
@@ -495,7 +511,7 @@ statement_list
 	;
 
 expression_statement
-	: ';' -> [";"]
+	: ';' -> [$1]
 	| expression ';' -> [$1, ";"] 
 	;
 
