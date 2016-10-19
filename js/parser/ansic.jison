@@ -1,7 +1,6 @@
 /* lexical grammar */
 %{
-    //var dictionary;
-    console.log("Dictionary is declared");
+    var symbolTable;
 %}
 %lex
 %%
@@ -113,21 +112,32 @@
 start
 	: translation_unit EOF 
     { /*typeof console !== 'undefined' ? console.log($1) : print($1);*/
-        printDictionary();
-        declarationsDictionary = {};
+        printSymbolTable();
+        symbolTable = {};
         return $$; 
     }
 	;
 
 primary_expression
 	: IDENTIFIER -> [$1]
-	| CONSTANT -> [$1]
-	| STRING_LITERAL -> ["type:STRING_LITERAL", $1]
+	| CONSTANT 
+    {
+        number = Number($CONSTANT);
+        // Return pair of value with its type
+        // Only int and double are supported
+        // TODO Support more types
+        if(number % 1 === 0){
+            $$ = generateTuple(number, typeEnum.INT);
+        } else {
+            $$ = generateTuple(number, typeEnum.DOUBLE);
+        } 
+    }
+	| STRING_LITERAL -> [$1]
 	| '(' expression ')' -> [$2]
 	;
 
 postfix_expression
-	: primary_expression -> [$1]
+	: primary_expression -> $1
 	| postfix_expression '[' expression ']' -> [$1, $3]
 	| postfix_expression '(' ')' -> [$1]
 	| postfix_expression '(' argument_expression_list ')' -> [$1, $3]
@@ -138,77 +148,106 @@ postfix_expression
 	;
 
 argument_expression_list
-	: assignment_expression -> [$1]
+	: assignment_expression -> $1
 	| argument_expression_list ',' assignment_expression -> [$1, $2]
 	;
 
 unary_expression
-	: postfix_expression -> [$1]
-	| INC_OP unary_expression
-	| DEC_OP unary_expression
-	| unary_operator cast_expression
-	| SIZEOF unary_expression
-	| SIZEOF '(' type_name ')'
+	: postfix_expression -> $1
+	| INC_OP unary_expression // Not implemented
+	| DEC_OP unary_expression // Not implemented
+	| unary_operator cast_expression 
+	| SIZEOF unary_expression // Not implemented yet
+	| SIZEOF '(' type_name ')' // Not implemented yet
 	;
 
 unary_operator
-	: '&' -> [$1]
-	| '*' -> [$1]
-	| '+' -> [$1]
-	| '-' -> [$1]
-	| '~' -> [$1]
-	| '!' -> [$1]
+	: '&' -> $1
+	| '*' -> $1
+	| '+' -> $1
+	| '-' -> $1
+	| '~' -> $1
+	| '!' -> $1
 	;
 
 cast_expression
-	: unary_expression -> [$1]
-	| '(' type_name ')' cast_expression // TODO Make cast
+	: unary_expression -> $1
+	| '(' type_name ')' cast_expression // TODO Implement cast
 	;
 
 multiplicative_expression
-	: cast_expression -> [$1]
+	: cast_expression -> $1
 	| multiplicative_expression '*' cast_expression
     {
-        mul = Number($multiplicative_expression);
-        cast = Number($cast_expression);
+        // Type mismatch
+        if($multiplicative_expression.type !== typeEnum.INT
+            && $multiplicative_expression.type !== typeEnum.DOUBLE)
+            throw new TypeError("Arguments of multiplication must be numbers.");
+        
+        if($cast_expression.type !== typeEnum.INT
+            && $cast_expression.type !== typeEnum.DOUBLE)
+            throw new TypeError("Arguments of multiplication must be numbers.");
+        
+        mul = $multiplicative_expression.value;
+        cast = $cast_expression.value;
         
         if(isNaN(mul) || isNaN(cast)){
             throw new TypeError("Arguments of multiplication must be numbers.");
         }
         
-        $$ = mul * cast;
+        var newType;
+        if($multiplicative_expression.type === typeEnum.INT && $cast_expression === typeEnum.INT)
+            newType = typeEnum.INT;
+        else
+            newType = typeEnum.DOUBLE;
+        $$ = generateTuple(mul * cast, newType); // TODO envolve in tuple
     }
-	| multiplicative_expression '/' cast_expression
+	| multiplicative_expression '/' cast_expression //TODO nice type checking and tuple formatting
     {
-        mul = Number($multiplicative_expression);
-        cast = Number($cast_expression);
+        if($multiplicative_expression.type !== typeEnum.INT
+            && $multiplicative_expression.type !== typeEnum.DOUBLE)
+            throw new TypeError("Arguments of division must be numbers.");
+        
+        if($cast_expression.type !== typeEnum.INT
+            && $cast_expression.type !== typeEnum.DOUBLE)
+            throw new TypeError("Arguments of division must be numbers.");
+        
+        mul = $multiplicative_expression.value;
+        cast = $cast_expression.value;
         
         if(isNaN(mul) || isNaN(cast)){
-            throw new TypeError("Arguments of multiplication must be numbers.");
+            throw new TypeError("Arguments of division must be a valid numbers.");
         }
         
         // If both are integers
-        if(mul % 1 === 0 && cast % 1 === 0){
-            $$ = ~~(mul / cast);
+        if($multiplicative_expression.type === typeEnum.INT && $cast_expression.type === typeEnum.INT){
+            $$ = generateTuple(~~(mul / cast),typeEnum.INT); //TODO check division by 0
         } else {
-            $$ = mul / cast;
+            $$ = generateTuple(mul / cast, typeEnum.DOUBLE);
         }
     }
-	| multiplicative_expression '%' cast_expression
+	| multiplicative_expression '%' cast_expression //TODO nice type checking and tuple formatting
     {
-        mul = Number($multiplicative_expression);
-        cast = Number($cast_expression);
+        if($multiplicative_expression.type !== typeEnum.INT)
+            throw new TypeError("Arguments of remainder must be integer numbers.");
         
-        if(isNaN(mul) || isNaN(cast)){
-            throw new TypeError("Arguments of multiplication must be numbers.");
+        if($cast_expression.type !== typeEnum.INT)
+            throw new TypeError("Arguments of remainder must be integer numbers.");
+        
+        var mul = $multiplicative_expression.value;
+        var cast = $cast_expression.value;
+        var remainder = mul % cast
+        
+        if(isNaN(mul) || isNaN(cast) || isNaN(remainder)){
+            throw new TypeError("Value of remainder is invalid.");
         }
         
-        $$ = mul % cast;
+        $$ = generateTuple(remainder, typeEnum.INT);
     }
 	;
 
 additive_expression
-	: multiplicative_expression -> [$1]
+	: multiplicative_expression -> $1.value
 	| additive_expression '+' multiplicative_expression
     {
         add = Number($additive_expression);
@@ -235,57 +274,64 @@ additive_expression
 
 shift_expression
 	: additive_expression -> [$1]
-	| shift_expression LEFT_OP additive_expression
-	| shift_expression RIGHT_OP additive_expression
+	| shift_expression LEFT_OP additive_expression //TODO
+	| shift_expression RIGHT_OP additive_expression //TODO
 	;
 
 relational_expression
 	: shift_expression -> [$1]
-	| relational_expression '<' shift_expression
-	| relational_expression '>' shift_expression
-	| relational_expression LE_OP shift_expression
-	| relational_expression GE_OP shift_expression
+	| relational_expression '<' shift_expression //TODO
+	| relational_expression '>' shift_expression //TODO
+	| relational_expression LE_OP shift_expression //TODO
+	| relational_expression GE_OP shift_expression //TODO
 	;
 
 equality_expression
 	: relational_expression -> [$1]
-	| equality_expression EQ_OP relational_expression
-	| equality_expression NE_OP relational_expression
+	| equality_expression EQ_OP relational_expression //TODO
+	| equality_expression NE_OP relational_expression //TODO
 	;
 
 and_expression
-	: equality_expression -> [$1]
-	| and_expression '&' equality_expression
+	: equality_expression -> [$1] 
+	| and_expression '&' equality_expression //TODO
 	;
 
 exclusive_or_expression
 	: and_expression -> [$1]
-	| exclusive_or_expression '^' and_expression
+	| exclusive_or_expression '^' and_expression //TODO
 	;
 
 inclusive_or_expression
-	: exclusive_or_expression -> [$1]
-	| inclusive_or_expression '|' exclusive_or_expression
+	: exclusive_or_expression -> [$1] 
+	| inclusive_or_expression '|' exclusive_or_expression //TODO
 	;
 
 logical_and_expression
 	: inclusive_or_expression -> [$1]
-	| logical_and_expression AND_OP inclusive_or_expression
+	| logical_and_expression AND_OP inclusive_or_expression //TODO
 	;
 
 logical_or_expression
 	: logical_and_expression -> [$1]
-	| logical_or_expression OR_OP logical_and_expression
+	| logical_or_expression OR_OP logical_and_expression //TODO
 	;
 
 conditional_expression
 	: logical_or_expression -> [$1]
-	| logical_or_expression '?' expression ':' conditional_expression
+	| logical_or_expression '?' expression ':' conditional_expression //TODO
 	;
 
 assignment_expression
 	: conditional_expression -> [$1]
-	| unary_expression assignment_operator assignment_expression -> [$1, $2, $3]
+	| unary_expression assignment_operator assignment_expression
+    {
+        // Check if unary_expression is defined in variable table
+        // Check type of unary_expression in variable table and compare with type of assignment_expression
+        // Apply assignment operator
+        console.log("unary_expression: " + $unary_expression + ", assignment_operator: " + $assignment_operator + ", assignment_expression: " + $assignment_expression);
+        $$ = $unary_expression;
+    }
 	;
 
 assignment_operator
@@ -312,8 +358,8 @@ constant_expression
 	;
 
 declaration
-	: declaration_specifiers ';' -> [$1]
-	| declaration_specifiers init_declarator_list ';' -> [$1, $2]
+	: declaration_specifiers ';' -> [$1] // Ignore
+	| declaration_specifiers init_declarator_list ';' -> [$1, $2] // 
 	;
 
 declaration_specifiers
@@ -332,8 +378,9 @@ init_declarator
 	: declarator -> [$1]
 	| declarator '=' initializer
     {
-        addDictionary($declarator, $initializer);
-        console.log("Add to dictionary");
+        // Check if symbol has already been declared
+        addInitialSymbolTable($declarator, $initializer);
+        console.log("Initial add to symbol table. Declarator: " + $declarator + ", Initializer: " + $initializer.value);
     }
 	;
 
@@ -343,17 +390,17 @@ storage_class_specifier
 
 type_specifier
     : TYPE_NAME -> [$1]
-	| VOID -> [$1] 
+//	| VOID -> [$1]  // Not supported yet
 	| CHAR -> [$1]
-	| SHORT -> [$1]
+//	| SHORT -> [$1] // Not supported yet
 	| INT 	-> [$1]
-	| LONG -> [$1]
-	| FLOAT -> [$1]
-	| DOUBLE -> [$1]
-	| SIGNED -> [$1]
-	| UNSIGNED -> [$1]
+//	| LONG -> [$1]   // Not supported yet
+//	| FLOAT -> [$1]  // Not supported yet
+	| DOUBLE -> [$1] 
+//	| SIGNED -> [$1] // Not supported yet
+//	| UNSIGNED -> [$1] // Not supported yet
 	| struct_or_union_specifier -> [$1]
-	| enum_specifier -> [$1]
+//	| enum_specifier -> [$1] // Not supported yet
 	;
 
 struct_or_union_specifier
@@ -392,20 +439,20 @@ struct_declarator
 	| declarator ':' constant_expression -> [$1, $3]
 	;
 
-enum_specifier
-	: ENUM '{' enumerator_list '}'
-	| ENUM IDENTIFIER '{' enumerator_list '}'
-	| ENUM IDENTIFIER
+enum_specifier // Not supported
+	: ENUM '{' enumerator_list '}' // Not supported
+	| ENUM IDENTIFIER '{' enumerator_list '}' // Not supported
+	| ENUM IDENTIFIER // Not supported
 	;
 
 enumerator_list
-	: enumerator
-	| enumerator_list ',' enumerator
+	: enumerator // Not supported
+	| enumerator_list ',' enumerator // Not supported
 	;
 
 enumerator
-	: IDENTIFIER
-	| IDENTIFIER '=' constant_expression
+	: IDENTIFIER // Not supported
+	| IDENTIFIER '=' constant_expression // Not supported
 	;
 
 declarator
@@ -559,15 +606,24 @@ function_definition
     
     
 %% 
-declarationsDictionary = {};
+symbolTable = {};
 
-addDictionary = function(key, value){
-    declarationsDictionary[key] = value;
+var typeEnum = {
+    INT: 1,
+    DOUBLE : 2
+};
+
+addInitialSymbolTable = function(key, value){
+    symbolTable[key] = value;
 }
 
-printDictionary = function(){
-    console.log("Print dictionary.");
-    for(key in declarationsDictionary){
-        console.log("Key: " + key + " Value: " + declarationsDictionary.key);
+printSymbolTable = function(){
+    console.log("Print symbol table.");
+    for(key in symbolTable){
+        console.log("Key: " + key + " Value: " + symbolTable[key]);
     }
+}
+
+generateTuple = function(val, typ){
+    return Object.freeze({value: val, type: typ });
 }
