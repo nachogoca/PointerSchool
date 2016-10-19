@@ -1,11 +1,15 @@
-
-/* description: Parses and executes mathematical expressions. */
-
 /* lexical grammar */
+%{
+    //var dictionary;
+    console.log("Dictionary is declared");
+%}
 %lex
 %%
 
-[\t\v\n\f\s]+            /* Ignore */ 
+[\t\v\n\f\s]+                           /* IGNORE */                                 
+"//".*                                  /* IGNORE */
+[/][*][^*]*[*]+([^/*][^*]*[*]+)*[/]     /* IGNORE */
+
 [0-9]+("."[0-9]+)?\b    return 'CONSTANT'
 
 ">>="               return 'RIGHT_ASSIGN'
@@ -57,7 +61,6 @@
 "break"             return 'BREAK'
 "case"              return 'CASE'
 "char"              return 'CHAR'
-"const"             return 'CONST'
 "continue"          return 'CONTINUE'
 "default"           return 'DEFAULT'
 "do"                return 'DO'
@@ -96,10 +99,10 @@
 %token XOR_ASSIGN OR_ASSIGN
 
 %token TYPEDEF EXTERN STATIC AUTO REGISTER
-%token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID
+%token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
 %token STRUCT UNION ENUM ELLIPSIS
 
-%token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+%token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR CONTINUE BREAK RETURN
 
 %nonassoc IF_WITHOUT_ELSE
 %nonassoc ELSE
@@ -109,35 +112,38 @@
 
 start
 	: translation_unit EOF 
-		{ /*typeof console !== 'undefined' ? console.log($1) : print($1);*/
-          return $$; }
+    { /*typeof console !== 'undefined' ? console.log($1) : print($1);*/
+        printDictionary();
+        declarationsDictionary = {};
+        return $$; 
+    }
 	;
 
 primary_expression
-	: IDENTIFIER -> ["type:IDENTIFIER", $1]
-	| CONSTANT
-	| STRING_LITERAL
-	| '(' expression ')'
+	: IDENTIFIER -> [$1]
+	| CONSTANT -> [$1]
+	| STRING_LITERAL -> ["type:STRING_LITERAL", $1]
+	| '(' expression ')' -> [$2]
 	;
 
 postfix_expression
-	: primary_expression -> ["type:primary_expression",$1]
-	| postfix_expression '[' expression ']'
-	| postfix_expression '(' ')'
-	| postfix_expression '(' argument_expression_list ')'
-	| postfix_expression '.' IDENTIFIER
-	| postfix_expression PTR_OP IDENTIFIER
-	| postfix_expression INC_OP
-	| postfix_expression DEC_OP
+	: primary_expression -> [$1]
+	| postfix_expression '[' expression ']' -> [$1, $3]
+	| postfix_expression '(' ')' -> [$1]
+	| postfix_expression '(' argument_expression_list ')' -> [$1, $3]
+	| postfix_expression '.' IDENTIFIER -> [$3]
+	| postfix_expression PTR_OP IDENTIFIER -> [$1, $2, $3]
+	| postfix_expression INC_OP -> [$1, $2]
+	| postfix_expression DEC_OP-> [$1, $2]
 	;
 
 argument_expression_list
-	: assignment_expression
-	| argument_expression_list ',' assignment_expression
+	: assignment_expression -> [$1]
+	| argument_expression_list ',' assignment_expression -> [$1, $2]
 	;
 
 unary_expression
-	: postfix_expression -> ["type:postfix_expression",$1]
+	: postfix_expression -> [$1]
 	| INC_OP unary_expression
 	| DEC_OP unary_expression
 	| unary_operator cast_expression
@@ -146,7 +152,7 @@ unary_expression
 	;
 
 unary_operator
-	: '&'
+	: '&' -> [$1]
 	| '*'
 	| '+'
 	| '-'
@@ -160,26 +166,56 @@ cast_expression
 	;
 
 multiplicative_expression
-	: cast_expression
+	: cast_expression -> [$1]
 	| multiplicative_expression '*' cast_expression
+    {
+        mul = Number($multiplicative_expression);
+        cast = Number($cast_expression);
+        
+        if(isNaN(mul) || isNaN(cast)){
+            throw new TypeError("Arguments of multiplication must be numbers.");
+        }
+        
+        $$ = mul * cast;
+    }
 	| multiplicative_expression '/' cast_expression
 	| multiplicative_expression '%' cast_expression
 	;
 
 additive_expression
-	: multiplicative_expression
+	: multiplicative_expression -> [$1]
 	| additive_expression '+' multiplicative_expression
+    {
+        add = Number($additive_expression);
+        mul = Number($multiplicative_expression);
+        
+        if(isNaN(add) || isNaN(mul)){
+            throw new TypeError("Arguments of addition must be numbers.");
+        }
+        
+        $$ = add + mul;
+    }
 	| additive_expression '-' multiplicative_expression
+    {
+        add = Number($additive_expression);
+        mul = Number($multiplicative_expression);
+        
+        if(isNaN(add) || isNaN(mul)){
+            throw new TypeError("Arguments of addition must be numbers.");
+        }
+        
+        $$ = add - mul;
+    }
 	;
 
 shift_expression
-	: additive_expression
+	: additive_expression -> [$1]
 	| shift_expression LEFT_OP additive_expression
 	| shift_expression RIGHT_OP additive_expression
 	;
 
 relational_expression
-	: shift_expression
+	: shift_expression -> [$1]
 	| relational_expression '<' shift_expression
 	| relational_expression '>' shift_expression
 	| relational_expression LE_OP shift_expression
@@ -187,44 +223,44 @@ relational_expression
 	;
 
 equality_expression
-	: relational_expression
+	: relational_expression -> [$1]
 	| equality_expression EQ_OP relational_expression
 	| equality_expression NE_OP relational_expression
 	;
 
 and_expression
-	: equality_expression
+	: equality_expression -> [$1]
 	| and_expression '&' equality_expression
 	;
 
 exclusive_or_expression
-	: and_expression
+	: and_expression -> [$1]
 	| exclusive_or_expression '^' and_expression
 	;
 
 inclusive_or_expression
-	: exclusive_or_expression
+	: exclusive_or_expression -> [$1]
 	| inclusive_or_expression '|' exclusive_or_expression
 	;
 
 logical_and_expression
-	: inclusive_or_expression
+	: inclusive_or_expression -> [$1]
 	| logical_and_expression AND_OP inclusive_or_expression
 	;
 
 logical_or_expression
-	: logical_and_expression
+	: logical_and_expression -> [$1]
 	| logical_or_expression OR_OP logical_and_expression
 	;
 
 conditional_expression
-	: logical_or_expression
+	: logical_or_expression -> [$1]
 	| logical_or_expression '?' expression ':' conditional_expression
 	;
 
 assignment_expression
-	: conditional_expression
-	| unary_expression assignment_operator assignment_expression
+	: conditional_expression -> [$1]
+	| unary_expression assignment_operator assignment_expression -> [$1, $2, $3]
 	;
 
 assignment_operator
@@ -242,8 +278,8 @@ assignment_operator
 	;
 
 expression
-	: assignment_expression
-	| expression ',' assignment_expression
+	: assignment_expression -> [$1]
+	| expression ',' assignment_expression -> [$1, $2]
 	;
 
 constant_expression
@@ -256,22 +292,24 @@ declaration
 	;
 
 declaration_specifiers
-	: storage_class_specifier
-	| storage_class_specifier declaration_specifiers
+	: storage_class_specifier -> [$1]
+	| storage_class_specifier declaration_specifiers -> [$1, $2]
 	| type_specifier -> [$1]
-	| type_specifier declaration_specifiers -> [$1]
-	| type_qualifier
-	| type_qualifier declaration_specifiers
+	| type_specifier declaration_specifiers -> [$1, $2]
 	;
 
 init_declarator_list
 	: init_declarator -> [$1]
-	| init_declarator_list ',' init_declarator
+	| init_declarator_list ',' init_declarator -> [$1, $3]
 	;
 
 init_declarator
 	: declarator -> [$1]
 	| declarator '=' initializer
+    {
+        addDictionary($declarator,0);
+        console.log("Add to dictionary");
+    }
 	;
 
 storage_class_specifier
@@ -299,18 +337,18 @@ type_specifier
 
 struct_or_union_specifier
 	: struct_or_union IDENTIFIER '{' struct_declaration_list '}' -> ["type:struct_or_union_specifier", $1, $2, $3, $4, $5]
-	| struct_or_union '{' struct_declaration_list '}'
+	| struct_or_union '{' struct_declaration_list '}' -> [$1, $3]
 	| struct_or_union IDENTIFIER -> [$1, $2]
 	;
 
 struct_or_union
-	: STRUCT
-	| UNION
+	: STRUCT -> [$1]
+	| UNION -> [$1]
 	;
 
 struct_declaration_list
 	: struct_declaration -> [$1]
-	| struct_declaration_list struct_declaration
+	| struct_declaration_list struct_declaration -> [$1, $2]
 	;
 
 struct_declaration
@@ -318,21 +356,19 @@ struct_declaration
 	;
 
 specifier_qualifier_list
-	: type_specifier specifier_qualifier_list
+	: type_specifier specifier_qualifier_list -> [$1, $2]
 	| type_specifier -> [$1]
-	| type_qualifier specifier_qualifier_list
-	| type_qualifier
 	;
 
 struct_declarator_list
-	: struct_declarator
-	| struct_declarator_list ',' struct_declarator
+	: struct_declarator -> [$1]
+	| struct_declarator_list ',' struct_declarator -> [$1, $3]
 	;
 
 struct_declarator
-	: declarator
-	| ':' constant_expression
-	| declarator ':' constant_expression
+	: declarator -> [$1]
+	| ':' constant_expression -> [$2]
+	| declarator ':' constant_expression -> [$1, $3]
 	;
 
 enum_specifier
@@ -351,13 +387,8 @@ enumerator
 	| IDENTIFIER '=' constant_expression
 	;
 
-type_qualifier
-	: CONST
-	| VOLATILE
-	;
-
 declarator
-	: pointer direct_declarator
+	: pointer direct_declarator -> [$1, $2]
 	| direct_declarator -> [$1]
 	;
 
@@ -373,16 +404,8 @@ direct_declarator
 
 pointer
 	: '*'
-	| '*' type_qualifier_list
 	| '*' pointer
-	| '*' type_qualifier_list pointer
 	;
-
-type_qualifier_list
-	: type_qualifier
-	| type_qualifier_list type_qualifier
-	;
-
 
 parameter_type_list
 	: parameter_list
@@ -411,9 +434,9 @@ type_name
 	;
 
 abstract_declarator
-	: pointer
-	| direct_abstract_declarator
-	| pointer direct_abstract_declarator
+	: pointer -> [$1]
+	| direct_abstract_declarator -> [$1]
+	| pointer direct_abstract_declarator -> [$1, $2]
 	;
 
 direct_abstract_declarator
@@ -429,51 +452,51 @@ direct_abstract_declarator
 	;
 
 initializer
-	: assignment_expression
-	| '{' initializer_list '}'
-	| '{' initializer_list ',' '}'
+	: assignment_expression -> [$1]
+	| '{' initializer_list '}' -> [$2]
+	| '{' initializer_list ',' '}' -> [$2]
 	;
 
 initializer_list
-	: initializer
-	| initializer_list ',' initializer
+	: initializer -> [$1]
+	| initializer_list ',' initializer -> [$1, $3]
 	;
 
 statement
-	: labeled_statement
-	| compound_statement
-	| expression_statement
-	| selection_statement
-	| iteration_statement
-	| jump_statement
+	: labeled_statement -> [$1]
+	| compound_statement -> [$1]
+	| expression_statement -> [$1]
+	| selection_statement -> [$1]
+	| iteration_statement -> [$1]
+	| jump_statement -> [$1]
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement
-	| CASE constant_expression ':' statement
-	| DEFAULT ':' statement
+	: IDENTIFIER ':' statement -> [$1, $3]
+	| CASE constant_expression ':' statement -> [$1, $2, $4]
+	| DEFAULT ':' statement -> [$1, $3]
 	;
 
 compound_statement
 	: '{' '}'
-	| '{' statement_list '}'
-	| '{' declaration_list '}'
-	| '{' declaration_list statement_list '}'
+	| '{' statement_list '}' -> [$2]
+	| '{' declaration_list '}' -> [$2]
+	| '{' declaration_list statement_list '}' -> [$2, $3]
 	;
 
 declaration_list
-	: declaration
-	| declaration_list declaration
+	: declaration ->[$1]
+	| declaration_list declaration ->[$1, $2]
 	;
 
 statement_list
-	: statement
-	| statement_list statement
+	: statement -> [$1]
+	| statement_list statement -> [$1, $2]
 	;
 
 expression_statement
-	: ';'
-	| expression ';'
+	: ';' -> [";"]
+	| expression ';' -> [$1, ";"] 
 	;
 
 selection_statement
@@ -490,11 +513,10 @@ iteration_statement
 	;
 
 jump_statement
-	: GOTO IDENTIFIER ';'
-	| CONTINUE ';'
-	| BREAK ';'
-	| RETURN ';'
-	| RETURN expression ';'
+	: CONTINUE ';' -> [$1]
+	| BREAK ';' -> [$1]
+	| RETURN ';' -> [$1]
+	| RETURN expression ';' -> [$1, $2]
 	;
 
 translation_unit
@@ -508,8 +530,23 @@ external_declaration
 	;
 
 function_definition
-	: declaration_specifiers declarator declaration_list compound_statement
-	| declaration_specifiers declarator compound_statement
-	| declarator declaration_list compound_statement
-	| declarator compound_statement
+	: declaration_specifiers declarator declaration_list compound_statement -> [$1, $2, $3, $4]
+	| declaration_specifiers declarator compound_statement -> [$1, $2, $3]
+	| declarator declaration_list compound_statement -> [$1, $2, $3]
+	| declarator compound_statement -> [$1, $2]
 	;
+    
+    
+%% 
+declarationsDictionary = {};
+
+addDictionary = function(key, value){
+    declarationsDictionary[key] = value;
+}
+
+printDictionary = function(){
+    console.log("Print dictionary.");
+    for(key in declarationsDictionary){
+        console.log("Key: " + key + " Value: " + declarationsDictionary.key);
+    }
+}

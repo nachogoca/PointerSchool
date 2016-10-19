@@ -42,7 +42,7 @@ function evaluateText(consoleWindow, text) {
 
     
     var ast;
-    
+    var a = 3;
     try{
         ast = ansic.parse(text);
         consoleWindow.setValue(ast);
