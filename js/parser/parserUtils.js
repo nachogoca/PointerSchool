@@ -2,7 +2,6 @@ module.exports.debug = function(){
     console.log('exports is of course working');
 }
 
-
 var symbolTable = {};
 module.exports.symbolTable = symbolTable;
 

@@ -247,33 +247,19 @@ multiplicative_expression
 	;
 
 additive_expression
-	: multiplicative_expression -> $1.value
+	: multiplicative_expression -> $1
 	| additive_expression '+' multiplicative_expression
     {
-        add = Number($additive_expression);
-        mul = Number($multiplicative_expression);
-        
-        if(isNaN(add) || isNaN(mul)){
-            throw new TypeError("Arguments of addition must be numbers.");
-        }
-        
-        $$ = add + mul;
+        $$ = arithmetic.add($additive_expression, $multiplicative_expression);
     }
 	| additive_expression '-' multiplicative_expression
     {
-        add = Number($additive_expression);
-        mul = Number($multiplicative_expression);
-        
-        if(isNaN(add) || isNaN(mul)){
-            throw new TypeError("Arguments of addition must be numbers.");
-        }
-        
-        $$ = add - mul;
+        $$ = arithmetic.subtract($additive_expression, $multiplicative_expression);
     }
 	;
 
 shift_expression
-	: additive_expression -> [$1]
+	: additive_expression -> $1.value
 	| shift_expression LEFT_OP additive_expression //TODO
 	| shift_expression RIGHT_OP additive_expression //TODO
 	;
@@ -380,7 +366,7 @@ init_declarator
     {
         // Check if symbol has already been declared
         parserUtils.addInitialSymbolTable($declarator, $initializer);
-        console.log("Initial add to symbol table. Declarator: " + $declarator + ", Initializer: " + $initializer.value);
+        //console.log("Initial add to symbol table. Declarator: " + $declarator + ", Initializer: " + $initializer.value);
     }
 	;
 
@@ -606,4 +592,6 @@ function_definition
     
     
 %% 
+    
 var parserUtils = require('./parserUtils.js');
+var arithmetic = require('./arithmetic.js');
