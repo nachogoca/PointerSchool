@@ -1,3 +1,5 @@
+var ansic = require('./parser/ansic.js');
+
 window.onload = function init(){
     
     function passAndHint(cm) {

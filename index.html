@@ -57,9 +57,8 @@
         <!-- CodeMirror Javascript -->
         <script src="addon/hint/c/c-templates.js"></script>
   		          
-    
-        <script src= "js/parser/ansic.js" type="text/javascript"></script>
-        <script src="js/codeMirrorInit.js" type="text/javascript"></script>
+
+        <script src="js/bundle.js" type="text/javascript"></script>
 <!--
         <script type="text/javascript" src="./common/webgl-utils.js"></script>
         <script type="text/javascript" src="./common/initShaders.js"></script>
@@ -92,25 +91,10 @@
         <section id=notebook>
             <form style="position: relative; margin-top: .5em;">
                 <textarea id=code>
-struct Books {
-   char  title[50];
-   char  author[50];
-   char  subject[100];
-   int   book_id;
-};
-
 int main( ) {
 
-   struct Books Book1;       
-   struct Books Book2;       
- 
-   strcpy( Book1.title, "C Programming");
-   strcpy( Book1.author, "Nuha Ali"); 
-   strcpy( Book1.subject, "C Programming Tutorial");
-   Book1.book_id = 6495407;
-
-
-   return 0;
+  int a = 2 * 2 * 2;
+  int b = 1;
 }</textarea>
             </form>
             <form style="position: relative; margin-top: .5em;">

@@ -112,8 +112,8 @@
 start
 	: translation_unit EOF 
     { /*typeof console !== 'undefined' ? console.log($1) : print($1);*/
-        printSymbolTable();
-        symbolTable = {};
+        parserUtils.printSymbolTable();
+        parserUtils.clearSymbolTable();
         return $$; 
     }
 	;
@@ -127,9 +127,9 @@ primary_expression
         // Only int and double are supported
         // TODO Support more types
         if(number % 1 === 0){
-            $$ = generateTuple(number, typeEnum.INT);
+            $$ = parserUtils.generateTuple(number, parserUtils.typeEnum.INT);
         } else {
-            $$ = generateTuple(number, typeEnum.DOUBLE);
+            $$ = parserUtils.generateTuple(number, parserUtils.typeEnum.DOUBLE);
         } 
     }
 	| STRING_LITERAL -> [$1]
@@ -180,12 +180,12 @@ multiplicative_expression
 	| multiplicative_expression '*' cast_expression
     {
         // Type mismatch
-        if($multiplicative_expression.type !== typeEnum.INT
-            && $multiplicative_expression.type !== typeEnum.DOUBLE)
+        if($multiplicative_expression.type !== parserUtils.typeEnum.INT
+            && $multiplicative_expression.type !== parserUtils.typeEnum.DOUBLE)
             throw new TypeError("Arguments of multiplication must be numbers.");
         
-        if($cast_expression.type !== typeEnum.INT
-            && $cast_expression.type !== typeEnum.DOUBLE)
+        if($cast_expression.type !== parserUtils.typeEnum.INT
+            && $cast_expression.type !== parserUtils.typeEnum.DOUBLE)
             throw new TypeError("Arguments of multiplication must be numbers.");
         
         mul = $multiplicative_expression.value;
@@ -196,20 +196,20 @@ multiplicative_expression
         }
         
         var newType;
-        if($multiplicative_expression.type === typeEnum.INT && $cast_expression === typeEnum.INT)
-            newType = typeEnum.INT;
+        if($multiplicative_expression.type === parserUtils.typeEnum.INT && $cast_expression === parserUtils.typeEnum.INT)
+            newType = parserUtils.typeEnum.INT;
         else
-            newType = typeEnum.DOUBLE;
-        $$ = generateTuple(mul * cast, newType); // TODO envolve in tuple
+            newType = parserUtils.typeEnum.DOUBLE;
+        $$ = parserUtils.generateTuple(mul * cast, newType); // TODO envolve in tuple
     }
 	| multiplicative_expression '/' cast_expression //TODO nice type checking and tuple formatting
     {
-        if($multiplicative_expression.type !== typeEnum.INT
-            && $multiplicative_expression.type !== typeEnum.DOUBLE)
+        if($multiplicative_expression.type !== parserUtils.typeEnum.INT
+            && $multiplicative_expression.type !== parserUtils.typeEnum.DOUBLE)
             throw new TypeError("Arguments of division must be numbers.");
         
-        if($cast_expression.type !== typeEnum.INT
-            && $cast_expression.type !== typeEnum.DOUBLE)
+        if($cast_expression.type !== parserUtils.typeEnum.INT
+            && $cast_expression.type !== parserUtils.typeEnum.DOUBLE)
             throw new TypeError("Arguments of division must be numbers.");
         
         mul = $multiplicative_expression.value;
@@ -220,18 +220,18 @@ multiplicative_expression
         }
         
         // If both are integers
-        if($multiplicative_expression.type === typeEnum.INT && $cast_expression.type === typeEnum.INT){
-            $$ = generateTuple(~~(mul / cast),typeEnum.INT); //TODO check division by 0
+        if($multiplicative_expression.type === parserUtils.typeEnum.INT && $cast_expression.type === parserUtils.typeEnum.INT){
+            $$ = parserUtils.generateTuple(~~(mul / cast),parserUtils.typeEnum.INT); //TODO check division by 0
         } else {
-            $$ = generateTuple(mul / cast, typeEnum.DOUBLE);
+            $$ = parserUtils.generateTuple(mul / cast, parserUtils.typeEnum.DOUBLE);
         }
     }
 	| multiplicative_expression '%' cast_expression //TODO nice type checking and tuple formatting
     {
-        if($multiplicative_expression.type !== typeEnum.INT)
+        if($multiplicative_expression.type !== parserUtils.typeEnum.INT)
             throw new TypeError("Arguments of remainder must be integer numbers.");
         
-        if($cast_expression.type !== typeEnum.INT)
+        if($cast_expression.type !== parserUtils.typeEnum.INT)
             throw new TypeError("Arguments of remainder must be integer numbers.");
         
         var mul = $multiplicative_expression.value;
@@ -242,7 +242,7 @@ multiplicative_expression
             throw new TypeError("Value of remainder is invalid.");
         }
         
-        $$ = generateTuple(remainder, typeEnum.INT);
+        $$ = parserUtils.generateTuple(remainder, parserUtils.typeEnum.INT);
     }
 	;
 
@@ -379,7 +379,7 @@ init_declarator
 	| declarator '=' initializer
     {
         // Check if symbol has already been declared
-        addInitialSymbolTable($declarator, $initializer);
+        parserUtils.addInitialSymbolTable($declarator, $initializer);
         console.log("Initial add to symbol table. Declarator: " + $declarator + ", Initializer: " + $initializer.value);
     }
 	;
@@ -606,24 +606,4 @@ function_definition
     
     
 %% 
-symbolTable = {};
-
-var typeEnum = {
-    INT: 1,
-    DOUBLE : 2
-};
-
-addInitialSymbolTable = function(key, value){
-    symbolTable[key] = value;
-}
-
-printSymbolTable = function(){
-    console.log("Print symbol table.");
-    for(key in symbolTable){
-        console.log("Key: " + key + " Value: " + symbolTable[key]);
-    }
-}
-
-generateTuple = function(val, typ){
-    return Object.freeze({value: val, type: typ });
-}
+var parserUtils = require('./parserUtils.js');
