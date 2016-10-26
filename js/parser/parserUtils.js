@@ -1,39 +1,17 @@
-module.exports.debug = function(){
-    console.log('exports is of course working');
-}
-
-var symbolTable = {};
-module.exports.symbolTable = symbolTable;
-
-var typeEnum = {
+var typeEnum = module.exports.typeEnum = {
     INT: 1,
     DOUBLE : 2
 };
-module.exports.typeEnum = typeEnum;
 
-
-var clearSymbolTable = function(){
-    symbolTable = {};
-}
-module.exports.clearSymbolTable = clearSymbolTable;
-
-var addInitialSymbolTable = function(key, value){
-    symbolTable[key] = value;
-}
-
-module.exports.addInitialSymbolTable = addInitialSymbolTable;
-
-var printSymbolTable  = function(){
-    console.log("Print symbol table.");
-    for(key in symbolTable){
-        console.log("Key: " + key + " Value: " + symbolTable[key]);
+var getReversedTypeEnum = module.exports.getReversedTypeEnum = function(typeNumber){
+    for(var key in typeEnum){
+        if(typeEnum[key] === typeNumber)
+            return key;
     }
+    
+    throw new Error("Type number not found.");
 }
 
-module.exports.printSymbolTable = printSymbolTable;
-
-var generateTuple = function(val, typ){
+var generateTuple = module.exports.generateTuple = function(val, typ){
     return Object.freeze({value: val, type: typ });
 }
-
-module.exports.generateTuple = generateTuple;

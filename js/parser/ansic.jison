@@ -112,14 +112,17 @@
 start
 	: translation_unit EOF 
     { /*typeof console !== 'undefined' ? console.log($1) : print($1);*/
-        parserUtils.printSymbolTable();
-        parserUtils.clearSymbolTable();
+        symbolTable.print();
+        symbolTable.free();
         return $$; 
     }
 	;
 
 primary_expression
-	: IDENTIFIER -> [$1]
+	: IDENTIFIER
+    {
+        $$ = $1
+    }
 	| CONSTANT 
     {
         number = Number($CONSTANT);
@@ -171,7 +174,7 @@ unary_operator
 	;
 
 cast_expression
-	: unary_expression -> $1
+	: unary_expression -> $1 // Obtain value of identifier
 	| '(' type_name ')' cast_expression // TODO Implement cast
 	;
 
@@ -259,13 +262,13 @@ additive_expression
 	;
 
 shift_expression
-	: additive_expression -> $1.value
+	: additive_expression -> $1
 	| shift_expression LEFT_OP additive_expression //TODO
 	| shift_expression RIGHT_OP additive_expression //TODO
 	;
 
 relational_expression
-	: shift_expression -> [$1]
+	: shift_expression -> $1
 	| relational_expression '<' shift_expression //TODO
 	| relational_expression '>' shift_expression //TODO
 	| relational_expression LE_OP shift_expression //TODO
@@ -273,56 +276,52 @@ relational_expression
 	;
 
 equality_expression
-	: relational_expression -> [$1]
+	: relational_expression -> $1
 	| equality_expression EQ_OP relational_expression //TODO
 	| equality_expression NE_OP relational_expression //TODO
 	;
 
 and_expression
-	: equality_expression -> [$1] 
+	: equality_expression -> $1 
 	| and_expression '&' equality_expression //TODO
 	;
 
 exclusive_or_expression
-	: and_expression -> [$1]
+	: and_expression -> $1
 	| exclusive_or_expression '^' and_expression //TODO
 	;
 
 inclusive_or_expression
-	: exclusive_or_expression -> [$1] 
+	: exclusive_or_expression -> $1 
 	| inclusive_or_expression '|' exclusive_or_expression //TODO
 	;
 
 logical_and_expression
-	: inclusive_or_expression -> [$1]
+	: inclusive_or_expression -> $1
 	| logical_and_expression AND_OP inclusive_or_expression //TODO
 	;
 
 logical_or_expression
-	: logical_and_expression -> [$1]
+	: logical_and_expression -> $1
 	| logical_or_expression OR_OP logical_and_expression //TODO
 	;
 
 conditional_expression
-	: logical_or_expression -> [$1]
+	: logical_or_expression -> $1
 	| logical_or_expression '?' expression ':' conditional_expression //TODO
 	;
 
 assignment_expression
-	: conditional_expression -> [$1]
+	: conditional_expression -> $1
 	| unary_expression assignment_operator assignment_expression
     {
-        // Check if unary_expression is defined in variable table
-        // Check type of unary_expression in variable table and compare with type of assignment_expression
-        // Apply assignment operator
-        console.log("unary_expression: " + $unary_expression + ", assignment_operator: " + $assignment_operator + ", assignment_expression: " + $assignment_expression);
-        $$ = $unary_expression;
+        $$ = assignment.compoundAssign($unary_expression, $assignment_operator, $assignment_expression);
     }
 	;
 
 assignment_operator
 	: '='
-	| MUL_ASSIGN
+/*	| MUL_ASSIGN
 	| DIV_ASSIGN
 	| MOD_ASSIGN
 	| ADD_ASSIGN
@@ -331,8 +330,8 @@ assignment_operator
 	| RIGHT_ASSIGN
 	| AND_ASSIGN
 	| XOR_ASSIGN
-	| OR_ASSIGN
-	;
+	| OR_ASSIGN 
+*/	;
 
 expression
 	: assignment_expression -> [$1]
@@ -345,47 +344,56 @@ constant_expression
 
 declaration
 	: declaration_specifiers ';' -> [$1] // Ignore
-	| declaration_specifiers init_declarator_list ';' -> [$1, $2] // 
+	| declaration_specifiers init_declarator_list ';' 
+    {
+        // TODO: Compare type specified and type received
+        var normalizedDeclarationSpecifier = $declaration_specifiers.toUpperCase();
+        symbolTable.setType($init_declarator_list, parserUtils.typeEnum[normalizedDeclarationSpecifier]);
+    }
 	;
 
 declaration_specifiers
-	: storage_class_specifier -> [$1]
-	| storage_class_specifier declaration_specifiers -> [$1, $2]
-	| type_specifier -> [$1]
-	| type_specifier declaration_specifiers -> [$1, $2]
+	: storage_class_specifier -> $1
+//	| storage_class_specifier declaration_specifiers -> [$1, $2] //Not supported
+	| type_specifier -> $1
+//	| type_specifier declaration_specifiers -> [$1, $2] // Not supported
 	;
 
 init_declarator_list
-	: init_declarator -> [$1]
-	| init_declarator_list ',' init_declarator -> [$1, $3]
+	: init_declarator -> $1
+//	| init_declarator_list ',' init_declarator -> [$1, $3] // Not supported
 	;
 
 init_declarator
-	: declarator -> [$1]
+	: declarator
+    {
+        symbolTable.insert($declarator);
+        $$ = $declarator;
+    }
 	| declarator '=' initializer
     {
-        // Check if symbol has already been declared
-        parserUtils.addInitialSymbolTable($declarator, $initializer);
-        //console.log("Initial add to symbol table. Declarator: " + $declarator + ", Initializer: " + $initializer.value);
+        symbolTable.insert($declarator);
+        symbolTable.setObject($declarator, $initializer);
+        $$ = $declarator;
     }
 	;
 
 storage_class_specifier
-	: TYPEDEF
+	: TYPEDEF -> $1
 	;
 
 type_specifier
-    : TYPE_NAME -> [$1]
+    : TYPE_NAME -> $1
 //	| VOID -> [$1]  // Not supported yet
-	| CHAR -> [$1]
+	| CHAR -> $1
 //	| SHORT -> [$1] // Not supported yet
-	| INT 	-> [$1]
+	| INT 	-> $1
 //	| LONG -> [$1]   // Not supported yet
 //	| FLOAT -> [$1]  // Not supported yet
-	| DOUBLE -> [$1] 
+	| DOUBLE -> $1 
 //	| SIGNED -> [$1] // Not supported yet
 //	| UNSIGNED -> [$1] // Not supported yet
-	| struct_or_union_specifier -> [$1]
+	| struct_or_union_specifier -> [$1] // Not support yet
 //	| enum_specifier -> [$1] // Not supported yet
 	;
 
@@ -506,7 +514,7 @@ direct_abstract_declarator
 	;
 
 initializer
-	: assignment_expression -> [$1]
+	: assignment_expression -> $1
 	| '{' initializer_list '}' -> [$2]
 	| '{' initializer_list ',' '}' -> [$2]
 	;
@@ -592,6 +600,7 @@ function_definition
     
     
 %% 
-    
+var symbolTable = require('./symbolTable.js');
 var parserUtils = require('./parserUtils.js');
 var arithmetic = require('./arithmetic.js');
+var assignment = require('./assignment.js');
