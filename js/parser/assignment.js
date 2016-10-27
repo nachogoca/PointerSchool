@@ -35,7 +35,7 @@ var cast = function(objectiveType, object){
     return parserUtils.generateTuple(object.value, objectiveType);
 }
 
-var isAssignable = function(objectiveType , receivedType){
+var isAssignable = module.exports.isAssignable = function(objectiveType , receivedType){
     if(objectiveType === receivedType)
         return true;
     

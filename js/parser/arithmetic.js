@@ -1,7 +1,7 @@
 var parserUtils = require('./parserUtils.js');
 
 
-var add = function(operand1, operand2){
+var add = module.exports.add = function(operand1, operand2){
     
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
@@ -31,10 +31,7 @@ var add = function(operand1, operand2){
     
 }
 
-module.exports.add = add;
-
-
-var subtract = function(operand1, operand2){
+var subtract = module.exports.subtract = function(operand1, operand2){
     
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
@@ -64,4 +61,6 @@ var subtract = function(operand1, operand2){
     
 }
 
-module.exports.subtract = subtract;
+var multiply = module.exports.multiply = function(operand1, operand2){
+    
+}

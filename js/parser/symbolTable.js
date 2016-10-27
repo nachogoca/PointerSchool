@@ -1,3 +1,5 @@
+parserUtils = require('./parserUtils.js');
+
 var symbolTable = {};
 
 var free = module.exports.free = function(){

@@ -121,7 +121,7 @@ start
 primary_expression
 	: IDENTIFIER
     {
-        $$ = $1
+        $$ = parserUtils.generateTuple($IDENTIFIER, parserUtils.typeEnum.ID);
     }
 	| CONSTANT 
     {
@@ -346,9 +346,7 @@ declaration
 	: declaration_specifiers ';' -> [$1] // Ignore
 	| declaration_specifiers init_declarator_list ';' 
     {
-        // TODO: Compare type specified and type received
-        var normalizedDeclarationSpecifier = $declaration_specifiers.toUpperCase();
-        symbolTable.setType($init_declarator_list, parserUtils.typeEnum[normalizedDeclarationSpecifier]);
+        declaration.declareType($init_declarator_list, $declaration_specifiers);
     }
 	;
 
@@ -367,13 +365,12 @@ init_declarator_list
 init_declarator
 	: declarator
     {
-        symbolTable.insert($declarator);
+        declaration.simpleDeclare($declarator);
         $$ = $declarator;
     }
 	| declarator '=' initializer
     {
-        symbolTable.insert($declarator);
-        symbolTable.setObject($declarator, $initializer);
+        declaration.complexDeclare($declarator, $initializer);
         $$ = $declarator;
     }
 	;
@@ -451,11 +448,14 @@ enumerator
 
 declarator
 	: pointer direct_declarator -> [$1, $2]
-	| direct_declarator -> [$1]
+	| direct_declarator -> $1
 	;
 
 direct_declarator
-	: IDENTIFIER -> [$1]
+	: IDENTIFIER
+    {
+        $$ = parserUtils.generateTuple($IDENTIFIER, parserUtils.typeEnum.ID);
+    }
 	| '(' declarator ')'
 	| direct_declarator '[' constant_expression ']'
 	| direct_declarator '[' ']'
@@ -604,3 +604,4 @@ var symbolTable = require('./symbolTable.js');
 var parserUtils = require('./parserUtils.js');
 var arithmetic = require('./arithmetic.js');
 var assignment = require('./assignment.js');
+var declaration = require('./declaration.js');
