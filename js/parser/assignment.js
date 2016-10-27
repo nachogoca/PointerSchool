@@ -12,26 +12,31 @@ var compoundAssign = module.exports.compoundAssign = function(identifier, operat
 
 var assign = function(identifier, tuple){
     // Check if identifier has already been defined in symbol table
-    if(!symbolTable.lookUp(identifier))
-        throw new Error('Identifier ' + identifier + ' is not defined.');
+    if(!symbolTable.lookUp(identifier.value))
+        throw new Error('Identifier ' + identifier.value + ' is not defined.');
+    
+    // If it is an identifier, convert to its value
+    if(tuple.type === parserUtils.typeEnum.ID)
+        tuple = symbolTable.getObject(tuple.value);
     
     // Compare types
-    var idType = symbolTable.getType(identifier);
+    var idType = symbolTable.getType(identifier.value);
+    console.log(idType);
     var tupleType = tuple.type;
     
     if(!isAssignable(idType, tupleType))
         throw new Error('Type ' + parserUtils.getReversedTypeEnum(tupleType) + ' can not be assigned to type ' + parserUtils.getReversedTypeEnum(idType));
     
     // Cast according to type
-    var objectToAssign = cast(symbolTable.getType(identifier), tuple);
+    var objectToAssign = cast(symbolTable.getType(identifier.value), tuple);
     
     // Apply assignment operator
-    symbolTable.setObject(identifier, tuple);
-    return symbolTable.getObject(identifier);
+    symbolTable.setObject(identifier.value, tuple);
+    return symbolTable.getObject(identifier.value);
 }
 
 // TODO: With more types the cast is more complex
-var cast = function(objectiveType, object){
+var cast = module.exports.cast = function(objectiveType, object){
     return parserUtils.generateTuple(object.value, objectiveType);
 }
 

@@ -13,6 +13,11 @@ simpleDeclare = module.exports.simpleDeclare = function(declarator){
 complexDeclare = module.exports.complexDeclare = function(declarator, initializer){
     
     simpleDeclare(declarator);
+    
+    // Convert identifiers to its value
+    if(initializer.type === parserUtils.typeEnum.ID)
+        initializer = symbolTable.getObject(initializer.value);
+    
     symbolTable.setObject(declarator.value, initializer);
 }
 
@@ -25,7 +30,6 @@ declareType = module.exports.declareType = function(declarator, type){
     
     if(objectAssigned === undefined){
         symbolTable.setType(declarator.value, normType);
-        
         return;
     }
     
@@ -33,7 +37,7 @@ declareType = module.exports.declareType = function(declarator, type){
     if(!assignment.isAssignable(normType, objectAssigned.type)){
         symbolTable.free();
         throw new TypeError('Type ' + parserUtils.getReversedTypeEnum(objectAssigned.type) + 
-                           ' can not be assigned to type ' + normType);
+                           ' can not be assigned to type ' + parserUtils.getReversedTypeEnum(normType));
     }
         
     symbolTable.setType(declarator.value, normType);

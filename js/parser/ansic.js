@@ -114,7 +114,7 @@ break;
 case 5: case 136: case 150: case 151: case 166: case 167: case 168:
 this.$ = [$$[$0-1]];
 break;
-case 6: case 14: case 16: case 22: case 23: case 24: case 25: case 26: case 27: case 30: case 34: case 37: case 40: case 45: case 50: case 54: case 56: case 58: case 60: case 68: case 69: case 70: case 73: case 74: case 75: case 76: case 102: case 135:
+case 6: case 14: case 16: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 30: case 34: case 37: case 40: case 45: case 50: case 54: case 56: case 58: case 60: case 68: case 69: case 70: case 73: case 74: case 75: case 76: case 102: case 135:
 this.$ = $$[$0];
 break;
 case 7: case 9: case 80:
@@ -132,77 +132,19 @@ break;
 case 15: case 64: case 152: case 169:
 this.$ = [$$[$0-2], $$[$0-1]];
 break;
-case 28:
-this.$ = $$[$0] // Obtain value of identifier;
-break;
 case 31:
 
-        // Type mismatch
-        if($$[$0-2].type !== parserUtils.typeEnum.INT
-            && $$[$0-2].type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        
-        if($$[$0].type !== parserUtils.typeEnum.INT
-            && $$[$0].type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        
-        mul = $$[$0-2].value;
-        cast = $$[$0].value;
-        
-        if(isNaN(mul) || isNaN(cast)){
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        }
-        
-        var newType;
-        if($$[$0-2].type === parserUtils.typeEnum.INT && $$[$0] === parserUtils.typeEnum.INT)
-            newType = parserUtils.typeEnum.INT;
-        else
-            newType = parserUtils.typeEnum.DOUBLE;
-        this.$ = parserUtils.generateTuple(mul * cast, newType); // TODO envolve in tuple
+        this.$ = arithmetic.multiply($$[$0-2], $$[$0]);
     
 break;
 case 32:
 
-        if($$[$0-2].type !== parserUtils.typeEnum.INT
-            && $$[$0-2].type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of division must be numbers.");
-        
-        if($$[$0].type !== parserUtils.typeEnum.INT
-            && $$[$0].type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of division must be numbers.");
-        
-        mul = $$[$0-2].value;
-        cast = $$[$0].value;
-        
-        if(isNaN(mul) || isNaN(cast)){
-            throw new TypeError("Arguments of division must be a valid numbers.");
-        }
-        
-        // If both are integers
-        if($$[$0-2].type === parserUtils.typeEnum.INT && $$[$0].type === parserUtils.typeEnum.INT){
-            this.$ = parserUtils.generateTuple(~~(mul / cast),parserUtils.typeEnum.INT); //TODO check division by 0
-        } else {
-            this.$ = parserUtils.generateTuple(mul / cast, parserUtils.typeEnum.DOUBLE);
-        }
+        this.$ = arithmetic.divide($$[$0-2], $$[$0]);
     
 break;
 case 33:
 
-        if($$[$0-2].type !== parserUtils.typeEnum.INT)
-            throw new TypeError("Arguments of remainder must be integer numbers.");
-        
-        if($$[$0].type !== parserUtils.typeEnum.INT)
-            throw new TypeError("Arguments of remainder must be integer numbers.");
-        
-        var mul = $$[$0-2].value;
-        var cast = $$[$0].value;
-        var remainder = mul % cast
-        
-        if(isNaN(mul) || isNaN(cast) || isNaN(remainder)){
-            throw new TypeError("Value of remainder is invalid.");
-        }
-        
-        this.$ = parserUtils.generateTuple(remainder, parserUtils.typeEnum.INT);
+        this.$ = arithmetic.mod($$[$0-2], $$[$0]);
     
 break;
 case 35:
@@ -224,7 +166,9 @@ case 61:
     
 break;
 case 66:
-this.$ = [$$[$0-1]] // Ignore;
+
+        console.log("Yes, I am useful");    
+    
 break;
 case 67:
 

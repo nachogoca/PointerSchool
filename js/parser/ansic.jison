@@ -174,7 +174,7 @@ unary_operator
 	;
 
 cast_expression
-	: unary_expression -> $1 // Obtain value of identifier
+	: unary_expression -> $1
 	| '(' type_name ')' cast_expression // TODO Implement cast
 	;
 
@@ -182,70 +182,15 @@ multiplicative_expression
 	: cast_expression -> $1
 	| multiplicative_expression '*' cast_expression
     {
-        // Type mismatch
-        if($multiplicative_expression.type !== parserUtils.typeEnum.INT
-            && $multiplicative_expression.type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        
-        if($cast_expression.type !== parserUtils.typeEnum.INT
-            && $cast_expression.type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        
-        mul = $multiplicative_expression.value;
-        cast = $cast_expression.value;
-        
-        if(isNaN(mul) || isNaN(cast)){
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        }
-        
-        var newType;
-        if($multiplicative_expression.type === parserUtils.typeEnum.INT && $cast_expression === parserUtils.typeEnum.INT)
-            newType = parserUtils.typeEnum.INT;
-        else
-            newType = parserUtils.typeEnum.DOUBLE;
-        $$ = parserUtils.generateTuple(mul * cast, newType); // TODO envolve in tuple
+        $$ = arithmetic.multiply($multiplicative_expression, $cast_expression);
     }
 	| multiplicative_expression '/' cast_expression //TODO nice type checking and tuple formatting
     {
-        if($multiplicative_expression.type !== parserUtils.typeEnum.INT
-            && $multiplicative_expression.type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of division must be numbers.");
-        
-        if($cast_expression.type !== parserUtils.typeEnum.INT
-            && $cast_expression.type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of division must be numbers.");
-        
-        mul = $multiplicative_expression.value;
-        cast = $cast_expression.value;
-        
-        if(isNaN(mul) || isNaN(cast)){
-            throw new TypeError("Arguments of division must be a valid numbers.");
-        }
-        
-        // If both are integers
-        if($multiplicative_expression.type === parserUtils.typeEnum.INT && $cast_expression.type === parserUtils.typeEnum.INT){
-            $$ = parserUtils.generateTuple(~~(mul / cast),parserUtils.typeEnum.INT); //TODO check division by 0
-        } else {
-            $$ = parserUtils.generateTuple(mul / cast, parserUtils.typeEnum.DOUBLE);
-        }
+        $$ = arithmetic.divide($multiplicative_expression, $cast_expression);
     }
 	| multiplicative_expression '%' cast_expression //TODO nice type checking and tuple formatting
     {
-        if($multiplicative_expression.type !== parserUtils.typeEnum.INT)
-            throw new TypeError("Arguments of remainder must be integer numbers.");
-        
-        if($cast_expression.type !== parserUtils.typeEnum.INT)
-            throw new TypeError("Arguments of remainder must be integer numbers.");
-        
-        var mul = $multiplicative_expression.value;
-        var cast = $cast_expression.value;
-        var remainder = mul % cast
-        
-        if(isNaN(mul) || isNaN(cast) || isNaN(remainder)){
-            throw new TypeError("Value of remainder is invalid.");
-        }
-        
-        $$ = parserUtils.generateTuple(remainder, parserUtils.typeEnum.INT);
+        $$ = arithmetic.mod($multiplicative_expression, $cast_expression);
     }
 	;
 

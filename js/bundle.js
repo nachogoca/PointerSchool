@@ -586,7 +586,7 @@ break;
 case 5: case 136: case 150: case 151: case 166: case 167: case 168:
 this.$ = [$$[$0-1]];
 break;
-case 6: case 14: case 16: case 22: case 23: case 24: case 25: case 26: case 27: case 30: case 34: case 37: case 40: case 45: case 50: case 54: case 56: case 58: case 60: case 68: case 69: case 70: case 73: case 74: case 75: case 76: case 102: case 135:
+case 6: case 14: case 16: case 22: case 23: case 24: case 25: case 26: case 27: case 28: case 30: case 34: case 37: case 40: case 45: case 50: case 54: case 56: case 58: case 60: case 68: case 69: case 70: case 73: case 74: case 75: case 76: case 102: case 135:
 this.$ = $$[$0];
 break;
 case 7: case 9: case 80:
@@ -604,77 +604,19 @@ break;
 case 15: case 64: case 152: case 169:
 this.$ = [$$[$0-2], $$[$0-1]];
 break;
-case 28:
-this.$ = $$[$0] // Obtain value of identifier;
-break;
 case 31:
 
-        // Type mismatch
-        if($$[$0-2].type !== parserUtils.typeEnum.INT
-            && $$[$0-2].type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        
-        if($$[$0].type !== parserUtils.typeEnum.INT
-            && $$[$0].type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        
-        mul = $$[$0-2].value;
-        cast = $$[$0].value;
-        
-        if(isNaN(mul) || isNaN(cast)){
-            throw new TypeError("Arguments of multiplication must be numbers.");
-        }
-        
-        var newType;
-        if($$[$0-2].type === parserUtils.typeEnum.INT && $$[$0] === parserUtils.typeEnum.INT)
-            newType = parserUtils.typeEnum.INT;
-        else
-            newType = parserUtils.typeEnum.DOUBLE;
-        this.$ = parserUtils.generateTuple(mul * cast, newType); // TODO envolve in tuple
+        this.$ = arithmetic.multiply($$[$0-2], $$[$0]);
     
 break;
 case 32:
 
-        if($$[$0-2].type !== parserUtils.typeEnum.INT
-            && $$[$0-2].type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of division must be numbers.");
-        
-        if($$[$0].type !== parserUtils.typeEnum.INT
-            && $$[$0].type !== parserUtils.typeEnum.DOUBLE)
-            throw new TypeError("Arguments of division must be numbers.");
-        
-        mul = $$[$0-2].value;
-        cast = $$[$0].value;
-        
-        if(isNaN(mul) || isNaN(cast)){
-            throw new TypeError("Arguments of division must be a valid numbers.");
-        }
-        
-        // If both are integers
-        if($$[$0-2].type === parserUtils.typeEnum.INT && $$[$0].type === parserUtils.typeEnum.INT){
-            this.$ = parserUtils.generateTuple(~~(mul / cast),parserUtils.typeEnum.INT); //TODO check division by 0
-        } else {
-            this.$ = parserUtils.generateTuple(mul / cast, parserUtils.typeEnum.DOUBLE);
-        }
+        this.$ = arithmetic.divide($$[$0-2], $$[$0]);
     
 break;
 case 33:
 
-        if($$[$0-2].type !== parserUtils.typeEnum.INT)
-            throw new TypeError("Arguments of remainder must be integer numbers.");
-        
-        if($$[$0].type !== parserUtils.typeEnum.INT)
-            throw new TypeError("Arguments of remainder must be integer numbers.");
-        
-        var mul = $$[$0-2].value;
-        var cast = $$[$0].value;
-        var remainder = mul % cast
-        
-        if(isNaN(mul) || isNaN(cast) || isNaN(remainder)){
-            throw new TypeError("Value of remainder is invalid.");
-        }
-        
-        this.$ = parserUtils.generateTuple(remainder, parserUtils.typeEnum.INT);
+        this.$ = arithmetic.mod($$[$0-2], $$[$0]);
     
 break;
 case 35:
@@ -696,7 +638,9 @@ case 61:
     
 break;
 case 66:
-this.$ = [$$[$0-1]] // Ignore;
+
+        console.log("Yes, I am useful");    
+    
 break;
 case 67:
 
@@ -1420,9 +1364,16 @@ if (typeof module !== 'undefined' && require.main === module) {
 }).call(this,require('_process'))
 },{"./arithmetic.js":6,"./assignment.js":7,"./declaration.js":8,"./parserUtils.js":9,"./symbolTable.js":10,"_process":3,"fs":1,"path":2}],6:[function(require,module,exports){
 var parserUtils = require('./parserUtils.js');
+var symbolTable = require('./symbolTable.js');
 
-
-var add = function(operand1, operand2){
+var add = module.exports.add = function(operand1, operand2){
+    
+    // Convert identifiers to its value
+    if(operand1.type === parserUtils.typeEnum.ID)
+        operand1 = symbolTable.getObject(operand1.value);
+    
+    if(operand2.type === parserUtils.typeEnum.ID)
+        operand2 = symbolTable.getObject(operand2.value);
     
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
@@ -1452,10 +1403,13 @@ var add = function(operand1, operand2){
     
 }
 
-module.exports.add = add;
-
-
-var subtract = function(operand1, operand2){
+var subtract = module.exports.subtract = function(operand1, operand2){
+    
+    if(operand1.type === parserUtils.typeEnum.ID)
+        operand1 = symbolTable.getObject(operand1.value);
+    
+    if(operand2.type === parserUtils.typeEnum.ID)
+        operand2 = symbolTable.getObject(operand2.value);
     
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
@@ -1485,9 +1439,108 @@ var subtract = function(operand1, operand2){
     
 }
 
-module.exports.subtract = subtract;
+var multiply = module.exports.multiply = function(operand1, operand2){
+    
+    // Convert identifiers to its value
+    if(operand1.type === parserUtils.typeEnum.ID)
+        operand1 = symbolTable.getObject(operand1.value);
+    
+    if(operand2.type === parserUtils.typeEnum.ID)
+        operand2 = symbolTable.getObject(operand2.value);
+    
+    // Assure correct type of arguments
+    if(operand1.type !== parserUtils.typeEnum.INT
+        && operand1.type !== parserUtils.typeEnum.DOUBLE)
+        throw new TypeError("Arguments of multiplication must be numbers");
+    
+    if(operand2.type !== parserUtils.typeEnum.INT
+        && operand2.type !== parserUtils.typeEnum.DOUBLE)
+        throw new TypeError("Arguments of multiplication must be numbers");
+    
+    var op1Val = operand1.value;
+    var op2Val = operand2.value;
+    
+    
+    if(isNaN(op1Val) || isNaN(op2Val)){
+        throw new TypeError("Invalid arguments of multiplication");
+    }
+    
+    // Calculate return type
+    var resultType;
+    if(operand1.type === parserUtils.typeEnum.INT && operand2.type ===  parserUtils.typeEnum.INT)
+        resultType = parserUtils.typeEnum.INT;
+    else
+        resultType = parserUtils.typeEnum.DOUBLE;
+    
+    return parserUtils.generateTuple(op1Val * op2Val, resultType);
+}
 
-},{"./parserUtils.js":9}],7:[function(require,module,exports){
+// TODO: Division by 0
+var divide = module.exports.divide = function(operand1, operand2){
+    
+    // Convert identifiers to its value
+    if(operand1.type === parserUtils.typeEnum.ID)
+        operand1 = symbolTable.getObject(operand1.value);
+    
+    if(operand2.type === parserUtils.typeEnum.ID)
+        operand2 = symbolTable.getObject(operand2.value);
+    
+    // Assure correct type of arguments
+    if(operand1.type !== parserUtils.typeEnum.INT
+        && operand1.type !== parserUtils.typeEnum.DOUBLE)
+        throw new TypeError("Arguments of division must be numbers");
+    
+    if(operand2.type !== parserUtils.typeEnum.INT
+        && operand2.type !== parserUtils.typeEnum.DOUBLE)
+        throw new TypeError("Arguments of division must be numbers");
+    
+    var op1Val = operand1.value;
+    var op2Val = operand2.value;
+    
+    
+    if(isNaN(op1Val) || isNaN(op2Val)){
+        throw new TypeError("Invalid arguments of division");
+    }
+    
+    // Calculate return type
+    var resultDivision;
+    var resultType;
+    if(operand1.type === parserUtils.typeEnum.INT && operand2.type ===  parserUtils.typeEnum.INT){
+        resultDivision = ~~(op1Val / op2Val);
+        resultType = parserUtils.typeEnum.INT;
+    } else {
+        resultDivision = op1Val / op2Val;
+        resultType = parserUtils.typeEnum.DOUBLE;
+    }
+    
+    return parserUtils.generateTuple(resultDivision, resultType);
+}
+
+var mod = module.exports.mod = function(operand1, operand2){
+    // Convert identifiers to its value
+    if(operand1.type === parserUtils.typeEnum.ID)
+        operand1 = symbolTable.getObject(operand1.value);
+    
+    if(operand2.type === parserUtils.typeEnum.ID)
+        operand2 = symbolTable.getObject(operand2.value);
+    
+    if(operand1.type !== parserUtils.typeEnum.INT)
+            throw new TypeError("Arguments of remainder must be integer numbers.");
+        
+    if(operand2.type !== parserUtils.typeEnum.INT)
+            throw new TypeError("Arguments of remainder must be integer numbers.");
+    
+    var op1Val = operand1.value;
+    var op2Val = operand2.value;
+    var modulus = op1Val % op2Val;
+        
+    if(isNaN(op1Val) || isNaN(op2Val) || isNaN(modulus)){
+        throw new TypeError("Value of remainder is invalid.");
+    }
+    
+    return parserUtils.generateTuple(modulus, parserUtils.typeEnum.INT);
+}
+},{"./parserUtils.js":9,"./symbolTable.js":10}],7:[function(require,module,exports){
 var parserUtils = require('./parserUtils.js');
 var symbolTable = require('./symbolTable');
 
@@ -1502,26 +1555,31 @@ var compoundAssign = module.exports.compoundAssign = function(identifier, operat
 
 var assign = function(identifier, tuple){
     // Check if identifier has already been defined in symbol table
-    if(!symbolTable.lookUp(identifier))
-        throw new Error('Identifier ' + identifier + ' is not defined.');
+    if(!symbolTable.lookUp(identifier.value))
+        throw new Error('Identifier ' + identifier.value + ' is not defined.');
+    
+    // If it is an identifier, convert to its value
+    if(tuple.type === parserUtils.typeEnum.ID)
+        tuple = symbolTable.getObject(tuple.value);
     
     // Compare types
-    var idType = symbolTable.getType(identifier);
+    var idType = symbolTable.getType(identifier.value);
+    console.log(idType);
     var tupleType = tuple.type;
     
     if(!isAssignable(idType, tupleType))
         throw new Error('Type ' + parserUtils.getReversedTypeEnum(tupleType) + ' can not be assigned to type ' + parserUtils.getReversedTypeEnum(idType));
     
     // Cast according to type
-    var objectToAssign = cast(symbolTable.getType(identifier), tuple);
+    var objectToAssign = cast(symbolTable.getType(identifier.value), tuple);
     
     // Apply assignment operator
-    symbolTable.setObject(identifier, tuple);
-    return symbolTable.getObject(identifier);
+    symbolTable.setObject(identifier.value, tuple);
+    return symbolTable.getObject(identifier.value);
 }
 
 // TODO: With more types the cast is more complex
-var cast = function(objectiveType, object){
+var cast = module.exports.cast = function(objectiveType, object){
     return parserUtils.generateTuple(object.value, objectiveType);
 }
 
@@ -1552,9 +1610,15 @@ simpleDeclare = module.exports.simpleDeclare = function(declarator){
 complexDeclare = module.exports.complexDeclare = function(declarator, initializer){
     
     simpleDeclare(declarator);
+    
+    // Convert identifiers to its value
+    if(initializer.type === parserUtils.typeEnum.ID)
+        initializer = symbolTable.getObject(initializer.value);
+    
     symbolTable.setObject(declarator.value, initializer);
 }
 
+// TODO: Convert inside object to declarator type
 declareType = module.exports.declareType = function(declarator, type){
     var normType = parserUtils.typeEnum[type.toUpperCase()];
     
@@ -1563,7 +1627,6 @@ declareType = module.exports.declareType = function(declarator, type){
     
     if(objectAssigned === undefined){
         symbolTable.setType(declarator.value, normType);
-        
         return;
     }
     
@@ -1571,7 +1634,7 @@ declareType = module.exports.declareType = function(declarator, type){
     if(!assignment.isAssignable(normType, objectAssigned.type)){
         symbolTable.free();
         throw new TypeError('Type ' + parserUtils.getReversedTypeEnum(objectAssigned.type) + 
-                           ' can not be assigned to type ' + normType);
+                           ' can not be assigned to type ' + parserUtils.getReversedTypeEnum(normType));
     }
         
     symbolTable.setType(declarator.value, normType);
