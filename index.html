@@ -56,54 +56,39 @@
   
         <!-- CodeMirror Javascript -->
         <script src="addon/hint/c/c-templates.js"></script>
-  		          
-
-        <script src="js/bundle.js" type="text/javascript"></script>
-<!--
-        <script type="text/javascript" src="./common/webgl-utils.js"></script>
-        <script type="text/javascript" src="./common/initShaders.js"></script>
-        <script type="text/javascript" src="./common/MV.js"></script>
-        <script type="text/javascript" src="js/canvas.js"></script>
+  		
+        <!-- Raphael -->
+        <script type="text/javascript" src="libs/raphael.js" ></script>
         
-        <script id="vertex-shader" type="x-shader/x-vertex">
-        attribute vec4 vPosition;
-
-        void
-        main()
-        {
-            gl_PointSize = 1.0;
-            gl_Position = vPosition;
-        }
-        </script>
-
-        <script id="fragment-shader" type="x-shader/x-fragment">
-        precision mediump float;
-
-        void
-        main()
-        {
-            gl_FragColor = vec4( 1.0, 0.9, 0.5, 1.0 );
-        }
-        </script>-->
+        <script src="js/bundle.js" type="text/javascript"></script> 
         
+                
     </head>
     <body> 
-        <section id=notebook>
-            <form style="position: relative; margin-top: .5em;">
-                <textarea id=code>
+        <section id="notebook">
+            
+                 <textarea id="code">
 int main( ) {
-
-  int a = 2 * 2 * 2;
-  int b = 1;
-}</textarea>
-            </form>
-            <form style="position: relative; margin-top: .5em;">
-                <textarea id=console>Welcome to console.</textarea>
+    int a = 2 * 2 * 2;
+    int b = 1;
+}
+                </textarea> 
+                
+            
+            <form >
+                <textarea id="console"> Welcome to console. </textarea>
             </form>   
         </section>
-        <!--<canvas id="gl-canvas" width="512" height="1024">
-            Oops ... your browser doesn't support the HTML5 canvas element
-        </canvas>-->
+        <div id="paper"></div>
+        <table id="buttons">
+            <tr>
+                <td><button id="visualize">Visualize execution</button></td>    
+                <td><button id="back">Back</button></td>
+                <td><button id="forward">Forward</button></td>
+                <td><button id="edit">Edit code</button></td>
+            </tr>
+        </table>
+        
     </body>
     </script>
 </html>

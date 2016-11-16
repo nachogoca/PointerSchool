@@ -1,9 +1,12 @@
 parserUtils = require('./parserUtils.js');
 
+// List of symbol tables with row number associated.
+var symbolTableHistory = [];
 var symbolTable = {};
 
 var free = module.exports.free = function(){
     symbolTable = {};
+    symbolTableHistory = [];
 }
 
 var insert = module.exports.insert = function(key){
@@ -29,6 +32,15 @@ var getType = module.exports.getType = function(key){
 var lookUpSymbolTable = module.exports.lookUp = function(key){
     return symbolTable.hasOwnProperty(key);
 }
+
+var getSymbolTableHistory = module.exports.getSymbolTableHistory = function(){
+    return symbolTableHistory;
+}
+
+var saveCurrentState = module.exports.saveCurrentState = function(currentRow){
+    symbolTableHistory.push( {table:JSON.parse(JSON.stringify(symbolTable)), line:currentRow - 1} );
+}
+
 
 var print =  module.exports.print  = function(){
     console.log("Print symbol table.");

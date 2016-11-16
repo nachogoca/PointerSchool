@@ -111,9 +111,7 @@
 
 start
 	: translation_unit EOF 
-    { /*typeof console !== 'undefined' ? console.log($1) : print($1);*/
-        symbolTable.print();
-        symbolTable.free();
+    { 
         return $$; 
     }
 	;
@@ -198,6 +196,7 @@ additive_expression
 	: multiplicative_expression -> $1
 	| additive_expression '+' multiplicative_expression
     {
+        console.log("Addition found at line " + @1.first_line + ", col" + @1.first_column);
         $$ = arithmetic.add($additive_expression, $multiplicative_expression);
     }
 	| additive_expression '-' multiplicative_expression
@@ -292,6 +291,7 @@ declaration
 	| declaration_specifiers init_declarator_list ';' 
     {
         declaration.declareType($init_declarator_list, $declaration_specifiers);
+        symbolTable.saveCurrentState(@1.first_line);
     }
 	;
 
@@ -502,8 +502,11 @@ statement_list
 	;
 
 expression_statement
-	: ';' -> [$1]
-	| expression ';' -> [$1, ";"] 
+	: ';' -> [$1] //no use
+	| expression ';'
+    {
+        symbolTable.saveCurrentState(@1.first_line);
+    }
 	;
 
 selection_statement

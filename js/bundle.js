@@ -411,9 +411,70 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],4:[function(require,module,exports){
+var editMode;
+var step;
+
+enterEditMode = module.exports.enterEditMode = function(){
+    editMode = true;
+    step = 0;
+}
+
+enterVisualMode = module.exports.enterVisualMode = function(){
+    editMode = false;
+    step = 0;
+}
+
+incrementStep = module.exports.incrementStep = function(){
+    step++;
+}
+
+decrementStep = module.exports.decementStep = function(){
+    step--;
+}
+
+isOnEditMode = module.exports.isOnEditMode = function(){
+    return editMode;
+}
+
+getCurrentStep = module.exports.getCurrentStep = function(){
+    return step;
+}
+},{}],5:[function(require,module,exports){
+var paper = {};
+var temporalSymbolTable = {};
+
+module.exports.init = function(){
+    paper = Raphael(document.getElementById("paper"), 0,0);
+}
+
+updateSymbolTable = module.exports.updateSymbolTable = function(updatedSymbolTable){
+    temporalSymbolTable = updateSymbolTable;
+    draw();
+}
+
+draw = module.exports.draw = function(){
+    // get temporal symbol table and draw it
+    //var rect1 = paper.rect(20,20,100,100).attr({fill: "blue"});
+}
+
+                
+},{}],6:[function(require,module,exports){
 var ansic = require('./parser/ansic.js');
+var raphael = require('./graphics/graphics.js');
+var symbolTable = require('./parser/symbolTable.js');
+var execution = require('./execution.js');
+
+/* Graphic elements */
+var editor;
+var externalConsole;
+
 
 window.onload = function init(){
+    
+    /* Graphic library init */
+    raphael.init();
+    
+    /* Codemirror autocomplete init */
     
     function passAndHint(cm) {
         setTimeout(function() {cm.execCommand("autocomplete");}, 100);
@@ -428,11 +489,8 @@ window.onload = function init(){
         CodeMirror.showHint(cm, myHint);
     }
     
-    CodeMirror.commands.evaluate = function(cm) {
-        evaluateText(console, editor.getValue());  
-    }
-    
-    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+    /* Code mirror init */
+    editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: true,
         styleActiveLine: true,
         theme: 'eclipse',
@@ -444,31 +502,106 @@ window.onload = function init(){
         }
     });
     
-    var console = CodeMirror.fromTextArea(document.getElementById("console"), {
+    externalConsole = CodeMirror.fromTextArea(document.getElementById("console"), {
         readOnly: true,
         theme: '3024-night',
         mode: 'none'
     });
     
     
+    /* Buttons init */
+    document.getElementById("visualize").onclick = visualizeExecution;
+    document.getElementById("back").onclick = stepBack;
+    document.getElementById("forward").onclick = stepForward;
+    document.getElementById("edit").onclick = editCode;
+    
+    /* Execution init, enter edit mode and clean canvas */
+    editCode();
+    
 }
+
+visualizeExecution = function(){
+    var execSuccesful = evaluateText(externalConsole, editor.getValue());
+    if(execSuccesful) {
+        execution.enterVisualMode();
+        
+        /* Change buttons state */
+        document.getElementById("visualize").disabled = true;
+        document.getElementById("back").disabled = true;
+        document.getElementById("forward").disabled = false;
+        document.getElementById("edit").disabled = false;
+        
+        /* Disable editor */
+        editor.setOption("readOnly", "nocursor");
+        
+        
+        
+    }   
+}
+
+stepBack = function(){
+    if(!execution.isOnEditMode())
+        execution.decrementStep();
+    
+    /* Draw current step */
+    /* Move line in editor */
+}
+
+stepForward = function(){
+    if(!execution.isOnEditMode()){
+        var symTableHist = symbolTable.getSymbolTableHistory();
+        
+        
+        if(execution.getCurrentStep() >= symTableHist.length){
+            document.getElementById("forward").disabled = true;
+            return;
+        }
+        
+        var currentStep = execution.getCurrentStep();
+        var symTableSnapshot = symTableHist[currentStep];
+        
+        console.log(symTableSnapshot);
+        editor.setCursor(symTableSnapshot.line); 
+        
+        
+        execution.incrementStep();
+    }
+        
+    
+    /* Draw current step */
+    /* Move line in editor */
+}
+
+editCode = function(){
+    /* Erase canvas */
+    execution.enterEditMode();
+    document.getElementById("visualize").disabled = false;
+    document.getElementById("back").disabled = true;
+    document.getElementById("forward").disabled = true;
+    document.getElementById("edit").disabled = true;
+    
+    /* Enable editor */
+    editor.setOption("readOnly", false);
+}
+
 
 function evaluateText(consoleWindow, text) {
-
     
     var ast;
-    var a = 3;
     try{
+        symbolTable.free();
         ast = ansic.parse(text);
-        consoleWindow.setValue(ast);
-        console.log(ast);
+        console.log(symbolTable.getSymbolTableHistory());
+        consoleWindow.setValue("Compilation success.");
     } catch (exception) {
         consoleWindow.setValue("Parse Error: " + exception.message);
+        return false;
     }
     
+    return true;
 }
 
-},{"./parser/ansic.js":5}],5:[function(require,module,exports){
+},{"./execution.js":4,"./graphics/graphics.js":5,"./parser/ansic.js":7,"./parser/symbolTable.js":12}],7:[function(require,module,exports){
 (function (process){
 /* parser generated by jison 0.4.17 */
 /*
@@ -556,9 +689,7 @@ performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* actio
 var $0 = $$.length - 1;
 switch (yystate) {
 case 1:
- /*typeof console !== 'undefined' ? console.log($$[$0-1]) : print($$[$0-1]);*/
-        symbolTable.print();
-        symbolTable.free();
+ 
         return this.$; 
     
 break;
@@ -580,7 +711,7 @@ case 3:
         } 
     
 break;
-case 4: case 10: case 63: case 65: case 82: case 83: case 84: case 88: case 89: case 91: case 92: case 123: case 124: case 138: case 140: case 141: case 142: case 143: case 144: case 145: case 155: case 157: case 170: case 172: case 173:
+case 4: case 10: case 63: case 65: case 82: case 83: case 84: case 88: case 89: case 91: case 92: case 123: case 124: case 138: case 140: case 141: case 142: case 143: case 144: case 145: case 155: case 170: case 172: case 173:
 this.$ = [$$[$0]];
 break;
 case 5: case 136: case 150: case 151: case 166: case 167: case 168:
@@ -621,6 +752,7 @@ case 33:
 break;
 case 35:
 
+        console.log("Addition found at line " + _$[$0-2].first_line + ", col" + _$[$0-2].first_column);
         this.$ = arithmetic.add($$[$0-2], $$[$0]);
     
 break;
@@ -638,13 +770,12 @@ case 61:
     
 break;
 case 66:
-
-        console.log("Yes, I am useful");    
-    
+this.$ = [$$[$0-1]] // Ignore;
 break;
 case 67:
 
         declaration.declareType($$[$0-1], $$[$0-2]);
+        symbolTable.saveCurrentState(_$[$0-2].first_line);
     
 break;
 case 71:
@@ -680,8 +811,13 @@ break;
 case 154:
 this.$ =[$$[$0-1], $$[$0]];
 break;
+case 157:
+this.$ = [$$[$0]] //no use;
+break;
 case 158:
-this.$ = [$$[$0-1], ";"] ;
+
+        symbolTable.saveCurrentState(_$[$0-1].first_line);
+    
 break;
 case 174:
 this.$ = [$$[$0-3], $$[$0-2], $$[$0-1], $$[$0]];
@@ -1362,7 +1498,7 @@ if (typeof module !== 'undefined' && require.main === module) {
 }
 }
 }).call(this,require('_process'))
-},{"./arithmetic.js":6,"./assignment.js":7,"./declaration.js":8,"./parserUtils.js":9,"./symbolTable.js":10,"_process":3,"fs":1,"path":2}],6:[function(require,module,exports){
+},{"./arithmetic.js":8,"./assignment.js":9,"./declaration.js":10,"./parserUtils.js":11,"./symbolTable.js":12,"_process":3,"fs":1,"path":2}],8:[function(require,module,exports){
 var parserUtils = require('./parserUtils.js');
 var symbolTable = require('./symbolTable.js');
 
@@ -1540,7 +1676,7 @@ var mod = module.exports.mod = function(operand1, operand2){
     
     return parserUtils.generateTuple(modulus, parserUtils.typeEnum.INT);
 }
-},{"./parserUtils.js":9,"./symbolTable.js":10}],7:[function(require,module,exports){
+},{"./parserUtils.js":11,"./symbolTable.js":12}],9:[function(require,module,exports){
 var parserUtils = require('./parserUtils.js');
 var symbolTable = require('./symbolTable');
 
@@ -1594,7 +1730,7 @@ var isAssignable = module.exports.isAssignable = function(objectiveType , receiv
     
     return false;
 }
-},{"./parserUtils.js":9,"./symbolTable":10}],8:[function(require,module,exports){
+},{"./parserUtils.js":11,"./symbolTable":12}],10:[function(require,module,exports){
 symbolTable = require('./symbolTable.js');
 assignment = require('./assignment.js');
 
@@ -1639,7 +1775,7 @@ declareType = module.exports.declareType = function(declarator, type){
         
     symbolTable.setType(declarator.value, normType);
 }
-},{"./assignment.js":7,"./symbolTable.js":10}],9:[function(require,module,exports){
+},{"./assignment.js":9,"./symbolTable.js":12}],11:[function(require,module,exports){
 var typeEnum = module.exports.typeEnum = {
     INT: 1,
     DOUBLE: 2,
@@ -1658,13 +1794,16 @@ var getReversedTypeEnum = module.exports.getReversedTypeEnum = function(typeNumb
 var generateTuple = module.exports.generateTuple = function(val, typ){
     return Object.freeze({value: val, type: typ });
 }
-},{}],10:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 parserUtils = require('./parserUtils.js');
 
+// List of symbol tables with row number associated.
+var symbolTableHistory = [];
 var symbolTable = {};
 
 var free = module.exports.free = function(){
     symbolTable = {};
+    symbolTableHistory = [];
 }
 
 var insert = module.exports.insert = function(key){
@@ -1691,6 +1830,15 @@ var lookUpSymbolTable = module.exports.lookUp = function(key){
     return symbolTable.hasOwnProperty(key);
 }
 
+var getSymbolTableHistory = module.exports.getSymbolTableHistory = function(){
+    return symbolTableHistory;
+}
+
+var saveCurrentState = module.exports.saveCurrentState = function(currentRow){
+    symbolTableHistory.push( {table:JSON.parse(JSON.stringify(symbolTable)), line:currentRow - 1} );
+}
+
+
 var print =  module.exports.print  = function(){
     console.log("Print symbol table.");
     for(key in symbolTable){
@@ -1700,4 +1848,4 @@ var print =  module.exports.print  = function(){
             console.log("Key: " + key + " Object value: " + symbolTable[key].object.value + " Type: " + symbolTable[key].type);
     }
 }
-},{"./parserUtils.js":9}]},{},[4]);
+},{"./parserUtils.js":11}]},{},[6]);
