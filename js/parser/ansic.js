@@ -169,8 +169,6 @@ this.$ = [$$[$0-1]] // Ignore;
 break;
 case 67:
 
-		//HERE TO DEBUG
-
         declaration.declareType($$[$0-1], $$[$0-2]);
         symbolTable.saveCurrentState(_$[$0-2].first_line);
 		this.$ = [$$[$0-2], $$[$0-1]]

@@ -23,9 +23,10 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
 
 // TODO: Convert inside object to declarator type
 declareType = module.exports.declareType = function(declarator, type){
-    console.log("Declarator: "+ declarator);
-    console.log("Type: " + type);
-    var normType = parserUtils.typeEnum[type.toUpperCase()];
+    if(typeof type === "string")
+        var normType = parserUtils.typeEnum[type.toUpperCase()];
+    else
+        var normType = type;
     
     // Declarator has no object assigned
     var objectAssigned = symbolTable.getObject(declarator.value);

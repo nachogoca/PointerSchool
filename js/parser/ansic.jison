@@ -290,8 +290,6 @@ declaration
 	: declaration_specifiers ';' -> [$1] // Ignore
 	| declaration_specifiers init_declarator_list ';' 
     {
-		//HERE TO DEBUG
-
         declaration.declareType($init_declarator_list, $declaration_specifiers);
         symbolTable.saveCurrentState(@1.first_line);
 		$$ = [$1, $2]

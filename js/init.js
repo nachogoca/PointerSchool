@@ -101,6 +101,7 @@ stepForward = function(){
         var symTableSnapshot = symTableHist[currentStep];
         
         console.log(symTableSnapshot);
+        externalConsole.setValue(symbolTable.hello(symTableSnapshot.table));
         editor.setCursor(symTableSnapshot.line); 
         /* Draw */
         

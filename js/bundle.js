@@ -562,6 +562,7 @@ stepForward = function(){
         var symTableSnapshot = symTableHist[currentStep];
         
         console.log(symTableSnapshot);
+        externalConsole.setValue(symbolTable.hello(symTableSnapshot.table));
         editor.setCursor(symTableSnapshot.line); 
         /* Draw */
         
@@ -770,8 +771,6 @@ case 66:
 this.$ = [$$[$0-1]] // Ignore;
 break;
 case 67:
-
-		//HERE TO DEBUG
 
         declaration.declareType($$[$0-1], $$[$0-2]);
         symbolTable.saveCurrentState(_$[$0-2].first_line);
@@ -1801,9 +1800,10 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
 
 // TODO: Convert inside object to declarator type
 declareType = module.exports.declareType = function(declarator, type){
-    console.log("Declarator: "+ declarator);
-    console.log("Type: " + type);
-    var normType = parserUtils.typeEnum[type.toUpperCase()];
+    if(typeof type === "string")
+        var normType = parserUtils.typeEnum[type.toUpperCase()];
+    else
+        var normType = type;
     
     // Declarator has no object assigned
     var objectAssigned = symbolTable.getObject(declarator.value);
@@ -1896,5 +1896,23 @@ var print =  module.exports.print  = function(){
         else
             console.log("Key: " + key + " Object value: " + symbolTable[key].object.value + " Type: " + symbolTable[key].type);
     }
+}
+
+var hello = module.exports.hello = function(snap){
+        var toReturn = "Symbol table: \n";
+    for(key in snap){
+        if(snap[key].object === undefined){
+            toReturn += ("\tKey: " + key + " Object value: undefined, Type: " + snap[key].type + "\n");
+        } else if ( Array.isArray(snap[key].object)){
+            var arryValue = "\n\t Object value:";
+            for(var i = 0; i < snap[key].object.length; i++)
+                arryValue += ("\n\t\t " + snap[key].object[i].value);
+            toReturn += ("\tKey: " + key + ", " + arryValue + ",\n\t\t Type: " + snap[key].type + "\n");
+        } else {
+            toReturn += ("\tKey: " + key + " Object value: " + snap[key].object.value + " Type: " + snap[key].type + "\n");
+        }
+            
+    }
+    return toReturn;
 }
 },{"./parserUtils.js":11}]},{},[6]);

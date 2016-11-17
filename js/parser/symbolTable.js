@@ -51,3 +51,21 @@ var print =  module.exports.print  = function(){
             console.log("Key: " + key + " Object value: " + symbolTable[key].object.value + " Type: " + symbolTable[key].type);
     }
 }
+
+var hello = module.exports.hello = function(snap){
+        var toReturn = "Symbol table: \n";
+    for(key in snap){
+        if(snap[key].object === undefined){
+            toReturn += ("\tKey: " + key + " Object value: undefined, Type: " + snap[key].type + "\n");
+        } else if ( Array.isArray(snap[key].object)){
+            var arryValue = "\n\t Object value:";
+            for(var i = 0; i < snap[key].object.length; i++)
+                arryValue += ("\n\t\t " + snap[key].object[i].value);
+            toReturn += ("\tKey: " + key + ", " + arryValue + ",\n\t\t Type: " + snap[key].type + "\n");
+        } else {
+            toReturn += ("\tKey: " + key + " Object value: " + snap[key].object.value + " Type: " + snap[key].type + "\n");
+        }
+            
+    }
+    return toReturn;
+}
