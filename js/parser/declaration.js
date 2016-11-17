@@ -23,6 +23,8 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
 
 // TODO: Convert inside object to declarator type
 declareType = module.exports.declareType = function(declarator, type){
+    console.log("Declarator: "+ declarator);
+    console.log("Type: " + type);
     var normType = parserUtils.typeEnum[type.toUpperCase()];
     
     // Declarator has no object assigned

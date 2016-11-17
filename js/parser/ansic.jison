@@ -196,7 +196,7 @@ additive_expression
 	: multiplicative_expression -> $1
 	| additive_expression '+' multiplicative_expression
     {
-        console.log("Addition found at line " + @1.first_line + ", col" + @1.first_column);
+        //console.log("Addition found at line " + @1.first_line + ", col" + @1.first_column);
         $$ = arithmetic.add($additive_expression, $multiplicative_expression);
     }
 	| additive_expression '-' multiplicative_expression
@@ -290,16 +290,19 @@ declaration
 	: declaration_specifiers ';' -> [$1] // Ignore
 	| declaration_specifiers init_declarator_list ';' 
     {
+		//HERE TO DEBUG
+
         declaration.declareType($init_declarator_list, $declaration_specifiers);
         symbolTable.saveCurrentState(@1.first_line);
+		$$ = [$1, $2]
     }
 	;
 
 declaration_specifiers
-	: storage_class_specifier -> $1
-//	| storage_class_specifier declaration_specifiers -> [$1, $2] //Not supported
-	| type_specifier -> $1
-//	| type_specifier declaration_specifiers -> [$1, $2] // Not supported
+	: type_specifier -> $1
+	| type_specifier declaration_specifiers -> [$1, $2] // Not supported
+	| storage_class_specifier -> $1
+	| storage_class_specifier declaration_specifiers -> [$1, $2] //Not supported
 	;
 
 init_declarator_list
@@ -335,44 +338,78 @@ type_specifier
 	| DOUBLE -> $1 
 //	| SIGNED -> [$1] // Not supported yet
 //	| UNSIGNED -> [$1] // Not supported yet
-	| struct_or_union_specifier -> [$1] // Not support yet
+	| struct_or_union_specifier -> $1
 //	| enum_specifier -> [$1] // Not supported yet
 	;
 
 struct_or_union_specifier
-	: struct_or_union IDENTIFIER '{' struct_declaration_list '}' -> ["type:struct_or_union_specifier", $1, $2, $3, $4, $5]
-	| struct_or_union '{' struct_declaration_list '}' -> [$1, $3]
-	| struct_or_union IDENTIFIER -> [$1, $2]
+	: struct_or_union IDENTIFIER '{' struct_declaration_list '}' // When declaring a struct
+	{
+		symbolTable.insert($IDENTIFIER);
+		symbolTable.setType($IDENTIFIER, parserUtils.typeEnum.STRUCT_TYPE);
+		symbolTable.setObject($IDENTIFIER, $struct_declaration_list);
+
+		symbolTable.saveCurrentState(@1.first_line);
+		$$ = [$1, $2, $3]; 
+	}
+//	| struct_or_union '{' struct_declaration_list '}' -> [$1, $3] // Unnamed structs are not supported
+	| struct_or_union IDENTIFIER
+	{
+		$$ = parserUtils.generateTuple($IDENTIFIER, parserUtils.typeEnum.STRUCT_TYPE);
+	}
 	;
 
 struct_or_union
-	: STRUCT -> [$1]
-	| UNION -> [$1]
+	: STRUCT -> $1
+//	| UNION -> $1 // Only structs are supported now
 	;
 
 struct_declaration_list
-	: struct_declaration -> [$1]
-	| struct_declaration_list struct_declaration -> [$1, $2]
+	: struct_declaration 
+	{
+		$$ = [$struct_declaration];
+	}
+	| struct_declaration_list struct_declaration
+	{ 
+		$struct_declaration_list.push( $struct_declaration );
+		$$ = $struct_declaration_list;	
+	}
 	;
 
+
+/*
+* Each one of 
+*/
 struct_declaration
-	: specifier_qualifier_list struct_declarator_list ';' ->[$1, $2, $3]
+	: specifier_qualifier_list struct_declarator_list ';'  // For example: 'int' 'x' ';'
+	{
+		if(typeof $specifier_qualifier_list === "string"){
+			var normType = parserUtils.typeEnum[$specifier_qualifier_list.toUpperCase()];
+			$$ = parserUtils.generateTuple($struct_declarator_list.value, normType);
+		} else if( typeof $specifier_qualifier_list === object) {
+			$$ = parserUtils.generateTuple($struct_declarator_list.value, $specifier_qualifier_list);
+		} else {
+			throw new Error("Unknown type " + $specifier_qualifier_list + " in struct declaration");
+		}
+			
+	}
 	;
 
 specifier_qualifier_list
-	: type_specifier specifier_qualifier_list -> [$1, $2]
-	| type_specifier -> [$1]
+	: type_specifier -> $1
+//	| type_specifier specifier_qualifier_list  // Not supported
+//	{		$$ = $specifier_qualifier_list.push($type_specifier);	}
 	;
 
 struct_declarator_list
-	: struct_declarator -> [$1]
-	| struct_declarator_list ',' struct_declarator -> [$1, $3]
+	: struct_declarator -> $1
+//	| struct_declarator_list ',' struct_declarator -> [$1, $3] //Not supported yet. Example case: int x, y;
 	;
 
 struct_declarator
-	: declarator -> [$1]
-	| ':' constant_expression -> [$2]
-	| declarator ':' constant_expression -> [$1, $3]
+	: declarator -> $1
+//	| ':' constant_expression -> [$2]
+//	| declarator ':' constant_expression -> [$1, $3]
 	;
 
 enum_specifier // Not supported
@@ -392,8 +429,8 @@ enumerator
 	;
 
 declarator
-	: pointer direct_declarator -> [$1, $2]
-	| direct_declarator -> $1
+	: pointer direct_declarator -> [$1, $2] //TODO
+	| direct_declarator -> $1 //Directly sends tuple of identifier
 	;
 
 direct_declarator
@@ -410,8 +447,8 @@ direct_declarator
 	;
 
 pointer
-	: '*'
-	| '*' pointer
+	: '*' -> [$1]//TODO
+	| '*' pointer -> [$1, $2] //TODO
 	;
 
 parameter_type_list
