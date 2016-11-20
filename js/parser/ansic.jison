@@ -353,6 +353,7 @@ struct_or_union_specifier
 //	| struct_or_union '{' struct_declaration_list '}' -> [$1, $3] // Unnamed structs are not supported
 	| struct_or_union IDENTIFIER
 	{
+		console.log("Struct " + $IDENTIFIER);
 		$$ = parserUtils.generateTuple($IDENTIFIER, parserUtils.typeEnum.STRUCT_TYPE);
 	}
 	;

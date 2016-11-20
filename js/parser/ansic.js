@@ -204,6 +204,7 @@ case 81:
 break;
 case 82:
 
+		console.log("Struct " + $$[$0]);
 		this.$ = parserUtils.generateTuple($$[$0], parserUtils.typeEnum.STRUCT_TYPE);
 	
 break;
