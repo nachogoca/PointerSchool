@@ -133,8 +133,8 @@ primary_expression
             $$ = parserUtils.generateTuple(number, parserUtils.typeEnum.DOUBLE);
         } 
     }
-	| STRING_LITERAL -> [$1]
-	| '(' expression ')' -> [$2]
+	| STRING_LITERAL -> [$1] // TODO Support
+	| '(' expression ')' -> [$2] //TODO Support
 	;
 
 postfix_expression
@@ -142,10 +142,16 @@ postfix_expression
 	| postfix_expression '[' expression ']' -> [$1, $3]
 	| postfix_expression '(' ')' -> [$1]
 	| postfix_expression '(' argument_expression_list ')' -> [$1, $3]
-	| postfix_expression '.' IDENTIFIER -> [$3]
+	| postfix_expression '.' IDENTIFIER // Access to struct element
+	{
+		console.log("postfix_expression. Access to struct.");
+		console.log($postfix_expression);
+		console.log($IDENTIFIER);
+		$$ = [$1, $2];
+	}
 	| postfix_expression PTR_OP IDENTIFIER -> [$1, $2, $3]
-	| postfix_expression INC_OP -> [$1, $2]
-	| postfix_expression DEC_OP-> [$1, $2]
+//	| postfix_expression INC_OP -> [$1, $2] //Not supported 
+//	| postfix_expression DEC_OP-> [$1, $2]
 	;
 
 argument_expression_list
@@ -155,8 +161,8 @@ argument_expression_list
 
 unary_expression
 	: postfix_expression -> $1
-	| INC_OP unary_expression // Not implemented
-	| DEC_OP unary_expression // Not implemented
+//	| INC_OP unary_expression // Not implemented
+//	| DEC_OP unary_expression // Not implemented
 	| unary_operator cast_expression 
 	| SIZEOF unary_expression // Not implemented yet
 	| SIZEOF '(' type_name ')' // Not implemented yet
@@ -182,11 +188,11 @@ multiplicative_expression
     {
         $$ = arithmetic.multiply($multiplicative_expression, $cast_expression);
     }
-	| multiplicative_expression '/' cast_expression //TODO nice type checking and tuple formatting
+	| multiplicative_expression '/' cast_expression 
     {
         $$ = arithmetic.divide($multiplicative_expression, $cast_expression);
     }
-	| multiplicative_expression '%' cast_expression //TODO nice type checking and tuple formatting
+	| multiplicative_expression '%' cast_expression /
     {
         $$ = arithmetic.mod($multiplicative_expression, $cast_expression);
     }
@@ -207,8 +213,8 @@ additive_expression
 
 shift_expression
 	: additive_expression -> $1
-	| shift_expression LEFT_OP additive_expression //TODO
-	| shift_expression RIGHT_OP additive_expression //TODO
+//	| shift_expression LEFT_OP additive_expression //Not supported
+//	| shift_expression RIGHT_OP additive_expression //Not supported
 	;
 
 relational_expression
@@ -290,6 +296,9 @@ declaration
 	: declaration_specifiers ';' -> [$1] // Ignore
 	| declaration_specifiers init_declarator_list ';' 
     {
+		console.log("Declaration: declaration_specifiers init_declarator_list ';' ");
+		console.log("Declaration specifiers");
+		console.log($declaration_specifiers);
         declaration.declareType($init_declarator_list, $declaration_specifiers);
         symbolTable.saveCurrentState(@1.first_line);
 		$$ = [$1, $2]
@@ -298,9 +307,9 @@ declaration
 
 declaration_specifiers
 	: type_specifier -> $1
-	| type_specifier declaration_specifiers -> [$1, $2] // Not supported
-	| storage_class_specifier -> $1
-	| storage_class_specifier declaration_specifiers -> [$1, $2] //Not supported
+//	| type_specifier declaration_specifiers -> [$1, $2] // Not supported
+//	| storage_class_specifier -> $1 // Not supported yet
+//	| storage_class_specifier declaration_specifiers -> [$1, $2] //Not supported
 	;
 
 init_declarator_list
@@ -330,10 +339,16 @@ type_specifier
 //	| VOID -> [$1]  // Not supported yet
 	| CHAR -> $1
 //	| SHORT -> [$1] // Not supported yet
-	| INT 	-> $1
+	| INT
+	{
+		$$ = parserUtils.generateTuple("INT", parserUtils.typeEnum.INT);
+	}
 //	| LONG -> [$1]   // Not supported yet
 //	| FLOAT -> [$1]  // Not supported yet
-	| DOUBLE -> $1 
+	| DOUBLE
+	{
+		$$ = parserUtils.generateTuple("INT",parserUtils.typeEnum.DOUBLE);
+	}
 //	| SIGNED -> [$1] // Not supported yet
 //	| UNSIGNED -> [$1] // Not supported yet
 	| struct_or_union_specifier -> $1
@@ -377,20 +392,23 @@ struct_declaration_list
 
 
 /*
-* Each one of 
+* Each one of the declarations inside a struct.
+* Recevies two objects, one representing the type; the second, the identifier
+* Example of type object:  Object { value="INT",  type=1}
+* Example of type identifier:  Object { value="x",  type=3}
+* The type inside the objects corresponds to the type enum in parserUtils.js
 */
 struct_declaration
+	// Contains type and identifier
 	: specifier_qualifier_list struct_declarator_list ';'  // For example: 'int' 'x' ';'
 	{
-		if(typeof $specifier_qualifier_list === "string"){
-			var normType = parserUtils.typeEnum[$specifier_qualifier_list.toUpperCase()];
-			$$ = parserUtils.generateTuple($struct_declarator_list.value, normType);
-		} else if( typeof $specifier_qualifier_list === object) {
-			$$ = parserUtils.generateTuple($struct_declarator_list.value, $specifier_qualifier_list);
+		if( typeof $specifier_qualifier_list == "object") {
+			// Unify identifier with its datatype
+			// Example of result of unification is 	Object { value="x",  type= Object { value="INT",  type=1 }} 
+			$$ = parserUtils.generateTuple($struct_declarator_list.value, $specifier_qualifier_list); 
 		} else {
-			throw new Error("Unknown type " + $specifier_qualifier_list + " in struct declaration");
+			throw new Error("Unknown type " + $specifier_qualifier_list + " in struct declaration. Line" + @1.first_line);
 		}
-			
 	}
 	;
 

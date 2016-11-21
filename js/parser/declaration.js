@@ -23,25 +23,23 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
 
 // TODO: Convert inside object to declarator type
 declareType = module.exports.declareType = function(declarator, type){
-    if(typeof type === "string")
-        var normType = parserUtils.typeEnum[type.toUpperCase()];
-    else
-        var normType = type;
     
+    console.log("Declaration.Declare type. Declarator:" + declarator + ", type:" + type);
+
     // Declarator has no object assigned
     var objectAssigned = symbolTable.getObject(declarator.value);
     
     if(objectAssigned === undefined){
-        symbolTable.setType(declarator.value, normType);
+        symbolTable.setType(declarator.value, type);
         return;
     }
     
     // Check if type can be assigned
-    if(!assignment.isAssignable(normType, objectAssigned.type)){
+    if(!assignment.isAssignable(type.type, objectAssigned.type)){
         symbolTable.free();
         throw new TypeError('Type ' + parserUtils.getReversedTypeEnum(objectAssigned.type) + 
-                           ' can not be assigned to type ' + parserUtils.getReversedTypeEnum(normType));
+                           ' can not be assigned to type ' + parserUtils.getReversedTypeEnum(type.type));
     }
         
-    symbolTable.setType(declarator.value, normType);
+    symbolTable.setType(declarator.value, type);
 }

@@ -11,6 +11,7 @@ var compoundAssign = module.exports.compoundAssign = function(identifier, operat
 }
 
 var assign = function(identifier, tuple){
+
     // Check if identifier has already been defined in symbol table
     if(!symbolTable.lookUp(identifier.value))
         throw new Error('Identifier ' + identifier.value + ' is not defined.');
@@ -21,10 +22,9 @@ var assign = function(identifier, tuple){
     
     // Compare types
     var idType = symbolTable.getType(identifier.value);
-    console.log(idType);
     var tupleType = tuple.type;
     
-    if(!isAssignable(idType, tupleType))
+    if(!isAssignable(idType.type, tupleType))
         throw new Error('Type ' + parserUtils.getReversedTypeEnum(tupleType) + ' can not be assigned to type ' + parserUtils.getReversedTypeEnum(idType));
     
     // Cast according to type
