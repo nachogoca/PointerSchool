@@ -3,20 +3,20 @@ var step;
 
 enterEditMode = module.exports.enterEditMode = function(){
     editMode = true;
-    step = 0;
+    step = -1;
 }
 
 enterVisualMode = module.exports.enterVisualMode = function(){
     editMode = false;
-    step = 0;
+    step = -1;
 }
 
 incrementStep = module.exports.incrementStep = function(){
-    step++;
+    ++step;
 }
 
 decrementStep = module.exports.decementStep = function(){
-    step--;
+    --step;
 }
 
 isOnEditMode = module.exports.isOnEditMode = function(){

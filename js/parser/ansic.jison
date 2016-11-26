@@ -1,6 +1,7 @@
 /* lexical grammar */
 %{
     var symbolTable;
+	"use strict";
 %}
 %lex
 %%
@@ -144,10 +145,9 @@ postfix_expression
 	| postfix_expression '(' argument_expression_list ')' -> [$1, $3]
 	| postfix_expression '.' IDENTIFIER // Access to struct element
 	{
-		console.log("postfix_expression. Access to struct.");
-		console.log($postfix_expression);
-		console.log($IDENTIFIER);
-		$$ = [$1, $2];
+		// Constructs a js object to hold value of struct variable and member element
+		var structElementTuple = {type : parserUtils.typeEnum.STRUCT_ELEMENT, structVariable : $postfix_expression.value, structMember : $IDENTIFIER}; 
+		$$ = structElementTuple;
 	}
 	| postfix_expression PTR_OP IDENTIFIER -> [$1, $2, $3]
 //	| postfix_expression INC_OP -> [$1, $2] //Not supported 
@@ -607,3 +607,4 @@ var parserUtils = require('./parserUtils.js');
 var arithmetic = require('./arithmetic.js');
 var assignment = require('./assignment.js');
 var declaration = require('./declaration.js');
+var struct = require('./struct.js');

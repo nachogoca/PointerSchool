@@ -56,14 +56,14 @@ var hello = module.exports.hello = function(snap){
         var toReturn = "Symbol table: \n";
     for(key in snap){
         if(snap[key].object === undefined){
-            toReturn += ("\tKey: " + key + " Object value: undefined, Type: " + snap[key].type + "\n");
+            toReturn += ("Key: " + key + " Object value: undefined, Type: " +  JSON.stringify(snap[key].type) + "\n");
         } else if ( Array.isArray(snap[key].object)){
-            var arryValue = "\n\t Object value:";
+            var arryValue = "\n Object value:";
             for(var i = 0; i < snap[key].object.length; i++)
-                arryValue += ("\n\t\t " + snap[key].object[i].value);
-            toReturn += ("\tKey: " + key + ", " + arryValue + ",\n\t\t Type: " + snap[key].type + "\n");
+                arryValue += ("\n\t " +  JSON.stringify(snap[key].object[i].value));
+            toReturn += ("Key: " + key + ", " + arryValue + ",\n\t\t Type: " +  JSON.stringify(snap[key].type) + "\n");
         } else {
-            toReturn += ("\tKey: " + key + " Object value: " + snap[key].object.value + " Type: " + snap[key].type + "\n");
+            toReturn += ("Key: " + key + " Object value: " +  JSON.stringify(snap[key].object) + "\n\t\t Type: " +  JSON.stringify(snap[key].type) + "\n");
         }
             
     }

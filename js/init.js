@@ -73,24 +73,41 @@ visualizeExecution = function(){
         /* Disable editor */
         editor.setOption("readOnly", "nocursor");
         
-        
-        
     }   
 }
 
 stepBack = function(){
-    if(!execution.isOnEditMode())
-        execution.decrementStep();
-    
-    /* TODO */
-    /* Draw current step */
-    /* Move line in editor */
+    if(!execution.isOnEditMode()){
+        execution.decementStep();
+        
+        document.getElementById("forward").disabled = false;
+
+        var symTableHist = symbolTable.getSymbolTableHistory();
+        
+        if(execution.getCurrentStep() < 0){
+            document.getElementById("back").disabled = true;
+            return;
+        }
+        
+        var currentStep = execution.getCurrentStep();
+        var symTableSnapshot = symTableHist[currentStep];
+        
+        console.log(symTableSnapshot);
+        externalConsole.setValue(symbolTable.hello(symTableSnapshot.table));
+        editor.setCursor(symTableSnapshot.line); 
+        /* Draw */
+        
+        
+    }
+        
 }
 
 stepForward = function(){
     if(!execution.isOnEditMode()){
+        execution.incrementStep();
+
         var symTableHist = symbolTable.getSymbolTableHistory();
-        
+        document.getElementById("back").disabled = false;
         
         if(execution.getCurrentStep() >= symTableHist.length){
             document.getElementById("forward").disabled = true;
@@ -104,8 +121,7 @@ stepForward = function(){
         externalConsole.setValue(symbolTable.hello(symTableSnapshot.table));
         editor.setCursor(symTableSnapshot.line); 
         /* Draw */
-        
-        execution.incrementStep();
+
     }
 }
 
@@ -125,15 +141,15 @@ editCode = function(){
 function evaluateText(consoleWindow, text) {
     
     var ast;
-    try{
+    //try{
         symbolTable.free();
         ast = ansic.parse(text);
         console.log(symbolTable.getSymbolTableHistory());
         consoleWindow.setValue("Compilation success.");
-    } catch (exception) {
+    /*} catch (exception) {
         consoleWindow.setValue("Parse Error: " + exception.message);
         return false;
-    }
+    }*/
     
     return true;
 }
