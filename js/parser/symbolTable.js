@@ -67,5 +67,6 @@ var hello = module.exports.hello = function(snap){
         }
             
     }
+    //return JSON.stringify(snap, null, 2);
     return toReturn;
 }

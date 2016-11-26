@@ -21,7 +21,7 @@ var assign = function(receiver, tuple){
     if(!symbolTable.lookUp(receiver.value))
         throw new Error('Identifier ' + receiver.value + ' is not defined.');
     
-    // If it is an receiver, convert to its value
+    // If it is an identifier, convert to its value
     if(tuple.type === parserUtils.typeEnum.ID)
         tuple = symbolTable.getObject(tuple.value);
     
@@ -54,6 +54,10 @@ var assignStructElement = function(receiver, exprToAssign){
         throw new Error("Undefined member " + receiver.structMember + " of structure " + receiver.structVariable );
 
     var memberPrototypeType = structObject.value[receiver.structMember].type;
+
+    // If it is an identifier, convert to its value
+    if(exprToAssign.type === parserUtils.typeEnum.ID)
+        exprToAssign = symbolTable.getObject(exprToAssign.value);
 
     if(!isAssignable(memberPrototypeType.type, exprToAssign.type))
         throw new Error("Mismatch type in assignment of member " + receiver.structMember  + " of structure " + receiver.structVariable  );
