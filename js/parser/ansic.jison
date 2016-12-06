@@ -135,7 +135,7 @@ primary_expression
         } 
     }
 	| STRING_LITERAL -> [$1] // TODO Support
-	| '(' expression ')' -> [$2] //TODO Support
+	| '(' expression ')' -> $2 //TODO Support
 	;
 
 postfix_expression
@@ -164,6 +164,12 @@ unary_expression
 //	| INC_OP unary_expression // Not implemented
 //	| DEC_OP unary_expression // Not implemented
 	| unary_operator cast_expression 
+	{
+		if($unary_operator === '&')
+			$$ = parserUtils.generateTuple($cast_expression, parserUtils.typeEnum.ADDRESS_TYPE);
+		else
+			throw new Error("Unary operator " + $unary_operator + " not supported");
+	}
 	| SIZEOF unary_expression // Not implemented yet
 	| SIZEOF '(' type_name ')' // Not implemented yet
 	;
@@ -192,7 +198,7 @@ multiplicative_expression
     {
         $$ = arithmetic.divide($multiplicative_expression, $cast_expression);
     }
-	| multiplicative_expression '%' cast_expression /
+	| multiplicative_expression '%' cast_expression
     {
         $$ = arithmetic.mod($multiplicative_expression, $cast_expression);
     }
@@ -284,8 +290,8 @@ assignment_operator
 */	;
 
 expression
-	: assignment_expression -> [$1]
-	| expression ',' assignment_expression -> [$1, $2]
+	: assignment_expression -> $1
+	| expression ',' assignment_expression -> [$1, $2] //not supported
 	;
 
 constant_expression
@@ -296,9 +302,6 @@ declaration
 	: declaration_specifiers ';' -> [$1] // Ignore
 	| declaration_specifiers init_declarator_list ';' 
     {
-		console.log("Declaration: declaration_specifiers init_declarator_list ';' ");
-		console.log("Declaration specifiers");
-		console.log($declaration_specifiers);
         declaration.declareType($init_declarator_list, $declaration_specifiers);
         symbolTable.saveCurrentState(@1.first_line);
 		$$ = [$1, $2]
@@ -368,7 +371,6 @@ struct_or_union_specifier
 //	| struct_or_union '{' struct_declaration_list '}' -> [$1, $3] // Unnamed structs are not supported
 	| struct_or_union IDENTIFIER
 	{
-		console.log("Struct " + $IDENTIFIER);
 		$$ = parserUtils.generateTuple($IDENTIFIER, parserUtils.typeEnum.STRUCT_TYPE);
 	}
 	;
@@ -446,7 +448,10 @@ enumerator
 	;
 
 declarator
-	: pointer direct_declarator -> [$1, $2] //TODO
+	: pointer direct_declarator
+	{
+		$$ = structElementTuple = {type : parserUtils.typeEnum.POINTER_TYPE, value : $direct_declarator.value, pointerDepth : $pointer.length}; 
+	}
 	| direct_declarator -> $1 //Directly sends tuple of identifier
 	;
 
@@ -464,8 +469,14 @@ direct_declarator
 	;
 
 pointer
-	: '*' -> [$1]//TODO
-	| '*' pointer -> [$1, $2] //TODO
+	: '*'
+	{
+		$$ = ["*"];
+	}
+	| '*' pointer 
+	{
+		$$ = $pointer.push("*");
+	}
 	;
 
 parameter_type_list

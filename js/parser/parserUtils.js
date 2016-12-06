@@ -4,7 +4,9 @@ var typeEnum = module.exports.typeEnum = {
     ID: 3,
     STRUCT_TYPE : 4,
     STRUCT_DECLARATION_LIST : 5,
-    STRUCT_ELEMENT : 6
+    STRUCT_ELEMENT : 6,
+    ADDRESS_TYPE : 7,
+    POINTER_TYPE : 8
 };
 
 var getReversedTypeEnum = module.exports.getReversedTypeEnum = function(typeNumber){

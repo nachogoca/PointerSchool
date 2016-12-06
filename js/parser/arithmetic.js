@@ -1,5 +1,7 @@
 var parserUtils = require('./parserUtils.js');
 var symbolTable = require('./symbolTable.js');
+var struct = require('./struct.js');
+
 
 var add = module.exports.add = function(operand1, operand2){
     
@@ -10,6 +12,16 @@ var add = module.exports.add = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+    
+
+    console.log(operand1);
+    console.log(operand2);
+
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
         && operand1.type !== parserUtils.typeEnum.DOUBLE)
@@ -46,6 +58,12 @@ var subtract = module.exports.subtract = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
         && operand1.type !== parserUtils.typeEnum.DOUBLE)
@@ -83,6 +101,13 @@ var multiply = module.exports.multiply = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+
+
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
         && operand1.type !== parserUtils.typeEnum.DOUBLE)
@@ -120,6 +145,13 @@ var divide = module.exports.divide = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+
+
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
         && operand1.type !== parserUtils.typeEnum.DOUBLE)
@@ -159,6 +191,12 @@ var mod = module.exports.mod = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+
     if(operand1.type !== parserUtils.typeEnum.INT)
             throw new TypeError("Arguments of remainder must be integer numbers.");
         

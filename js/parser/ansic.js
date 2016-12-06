@@ -110,9 +110,9 @@ case 4:
 this.$ = [$$[$0]] // TODO Support;
 break;
 case 5:
-this.$ = [$$[$0-1]] //TODO Support;
+this.$ = $$[$0-1] //TODO Support;
 break;
-case 6: case 12: case 14: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 26: case 30: case 33: case 34: case 39: case 44: case 48: case 50: case 52: case 54: case 62: case 63: case 66: case 67: case 68: case 71: case 74: case 78: case 79: case 80: case 122:
+case 6: case 12: case 14: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 26: case 30: case 33: case 34: case 39: case 44: case 48: case 50: case 52: case 54: case 57: case 62: case 63: case 66: case 67: case 68: case 71: case 74: case 78: case 79: case 80: case 122:
 this.$ = $$[$0];
 break;
 case 7: case 9:
@@ -131,8 +131,16 @@ break;
 case 11: case 162: case 163:
 this.$ = [$$[$0-2], $$[$0-1], $$[$0]];
 break;
-case 13: case 58: case 139: case 156:
+case 13: case 139: case 156:
 this.$ = [$$[$0-2], $$[$0-1]];
+break;
+case 15:
+
+		if($$[$0-1] === '&')
+			this.$ = parserUtils.generateTuple($$[$0], parserUtils.typeEnum.ADDRESS_TYPE);
+		else
+			throw new Error("Unary operator " + $$[$0-1] + " not supported");
+	
 break;
 case 27:
 
@@ -168,7 +176,10 @@ case 55:
         this.$ = assignment.compoundAssign($$[$0-2], $$[$0-1], $$[$0]);
     
 break;
-case 57: case 59: case 110: case 111: case 125: case 127: case 128: case 129: case 130: case 131: case 132: case 142: case 157: case 159: case 160:
+case 58:
+this.$ = [$$[$0-2], $$[$0-1]] //not supported;
+break;
+case 59: case 110: case 111: case 125: case 127: case 128: case 129: case 130: case 131: case 132: case 142: case 157: case 159: case 160:
 this.$ = [$$[$0]];
 break;
 case 60:
@@ -176,9 +187,6 @@ this.$ = [$$[$0-1]] // Ignore;
 break;
 case 61:
 
-		console.log("Declaration: declaration_specifiers init_declarator_list ';' ");
-		console.log("Declaration specifiers");
-		console.log($$[$0-2]);
         declaration.declareType($$[$0-1], $$[$0-2]);
         symbolTable.saveCurrentState(_$[$0-2].first_line);
 		this.$ = [$$[$0-2], $$[$0-1]]
@@ -218,7 +226,6 @@ case 72:
 break;
 case 73:
 
-		console.log("Struct " + $$[$0]);
 		this.$ = parserUtils.generateTuple($$[$0], parserUtils.typeEnum.STRUCT_TYPE);
 	
 break;
@@ -244,14 +251,23 @@ case 77:
 		}
 	
 break;
-case 88: case 98:
-this.$ = [$$[$0-1], $$[$0]] //TODO;
+case 88:
+
+		this.$ = structElementTuple = {type : parserUtils.typeEnum.POINTER_TYPE, value : $$[$0].value, pointerDepth : $$[$0-1].length}; 
+	
 break;
 case 89:
 this.$ = $$[$0] //Directly sends tuple of identifier;
 break;
 case 97:
-this.$ = [$$[$0]]//TODO;
+
+		this.$ = ["*"];
+	
+break;
+case 98:
+
+		this.$ = $$[$0].push("*");
+	
 break;
 case 112: case 143: case 158: case 164:
 this.$ = [$$[$0-1], $$[$0]];

@@ -1,5 +1,6 @@
 var parserUtils = require('./parserUtils.js');
 var symbolTable = require('./symbolTable');
+var structManager = require('./struct.js');
 
 var compoundAssign = module.exports.compoundAssign = function(identifier, operator, tuple){
     if(operator === '=')
@@ -12,6 +13,13 @@ var compoundAssign = module.exports.compoundAssign = function(identifier, operat
 
 var assign = function(receiver, tuple){
 
+    // If it is an identifier, convert to its value
+    if(tuple.type === parserUtils.typeEnum.ID)
+        tuple = symbolTable.getObject(tuple.value);
+    
+    if(tuple.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        tuple = structManager.getStructElementValue(tuple.structVariable, tuple.structMember);
+
     if(receiver.type == parserUtils.typeEnum.STRUCT_ELEMENT){
         assignStructElement(receiver, tuple);
         return tuple;
@@ -20,11 +28,7 @@ var assign = function(receiver, tuple){
     // Check if receiver has already been defined in symbol table
     if(!symbolTable.lookUp(receiver.value))
         throw new Error('Identifier ' + receiver.value + ' is not defined.');
-    
-    // If it is an identifier, convert to its value
-    if(tuple.type === parserUtils.typeEnum.ID)
-        tuple = symbolTable.getObject(tuple.value);
-    
+
     // Compare types
     var idType = symbolTable.getType(receiver.value);
     var tupleType = tuple.type;
@@ -41,11 +45,7 @@ var assign = function(receiver, tuple){
 }
 
 var assignStructElement = function(receiver, exprToAssign){
-    console.log("assignStructElement");
-    console.log(receiver);
-    console.log(exprToAssign);
     var structObject = symbolTable.getObject(receiver.structVariable);
-    console.log(structObject);
 
     if(structObject === undefined)
         throw new Error("Undefined structure variable: " + receiver.structVariable);
@@ -64,7 +64,6 @@ var assignStructElement = function(receiver, exprToAssign){
 
     structObject.value[receiver.structMember] = parserUtils.generateTuple(exprToAssign, memberPrototypeType) ;
     symbolTable.setObject(receiver.structVariable, structObject);
-    console.log(structObject);
 }
 
 // TODO: With more types the cast is more complex

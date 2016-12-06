@@ -729,9 +729,9 @@ case 4:
 this.$ = [$$[$0]] // TODO Support;
 break;
 case 5:
-this.$ = [$$[$0-1]] //TODO Support;
+this.$ = $$[$0-1] //TODO Support;
 break;
-case 6: case 12: case 14: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 26: case 30: case 33: case 34: case 39: case 44: case 48: case 50: case 52: case 54: case 62: case 63: case 66: case 67: case 68: case 71: case 74: case 78: case 79: case 80: case 122:
+case 6: case 12: case 14: case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 26: case 30: case 33: case 34: case 39: case 44: case 48: case 50: case 52: case 54: case 57: case 62: case 63: case 66: case 67: case 68: case 71: case 74: case 78: case 79: case 80: case 122:
 this.$ = $$[$0];
 break;
 case 7: case 9:
@@ -750,8 +750,16 @@ break;
 case 11: case 162: case 163:
 this.$ = [$$[$0-2], $$[$0-1], $$[$0]];
 break;
-case 13: case 58: case 139: case 156:
+case 13: case 139: case 156:
 this.$ = [$$[$0-2], $$[$0-1]];
+break;
+case 15:
+
+		if($$[$0-1] === '&')
+			this.$ = parserUtils.generateTuple($$[$0], parserUtils.typeEnum.ADDRESS_TYPE);
+		else
+			throw new Error("Unary operator " + $$[$0-1] + " not supported");
+	
 break;
 case 27:
 
@@ -787,7 +795,10 @@ case 55:
         this.$ = assignment.compoundAssign($$[$0-2], $$[$0-1], $$[$0]);
     
 break;
-case 57: case 59: case 110: case 111: case 125: case 127: case 128: case 129: case 130: case 131: case 132: case 142: case 157: case 159: case 160:
+case 58:
+this.$ = [$$[$0-2], $$[$0-1]] //not supported;
+break;
+case 59: case 110: case 111: case 125: case 127: case 128: case 129: case 130: case 131: case 132: case 142: case 157: case 159: case 160:
 this.$ = [$$[$0]];
 break;
 case 60:
@@ -795,9 +806,6 @@ this.$ = [$$[$0-1]] // Ignore;
 break;
 case 61:
 
-		console.log("Declaration: declaration_specifiers init_declarator_list ';' ");
-		console.log("Declaration specifiers");
-		console.log($$[$0-2]);
         declaration.declareType($$[$0-1], $$[$0-2]);
         symbolTable.saveCurrentState(_$[$0-2].first_line);
 		this.$ = [$$[$0-2], $$[$0-1]]
@@ -837,7 +845,6 @@ case 72:
 break;
 case 73:
 
-		console.log("Struct " + $$[$0]);
 		this.$ = parserUtils.generateTuple($$[$0], parserUtils.typeEnum.STRUCT_TYPE);
 	
 break;
@@ -863,14 +870,23 @@ case 77:
 		}
 	
 break;
-case 88: case 98:
-this.$ = [$$[$0-1], $$[$0]] //TODO;
+case 88:
+
+		this.$ = structElementTuple = {type : parserUtils.typeEnum.POINTER_TYPE, value : $$[$0].value, pointerDepth : $$[$0-1].length}; 
+	
 break;
 case 89:
 this.$ = $$[$0] //Directly sends tuple of identifier;
 break;
 case 97:
-this.$ = [$$[$0]]//TODO;
+
+		this.$ = ["*"];
+	
+break;
+case 98:
+
+		this.$ = $$[$0].push("*");
+	
 break;
 case 112: case 143: case 158: case 164:
 this.$ = [$$[$0-1], $$[$0]];
@@ -1582,6 +1598,8 @@ if (typeof module !== 'undefined' && require.main === module) {
 },{"./arithmetic.js":8,"./assignment.js":9,"./declaration.js":10,"./parserUtils.js":11,"./struct.js":12,"./symbolTable.js":13,"_process":3,"fs":1,"path":2}],8:[function(require,module,exports){
 var parserUtils = require('./parserUtils.js');
 var symbolTable = require('./symbolTable.js');
+var struct = require('./struct.js');
+
 
 var add = module.exports.add = function(operand1, operand2){
     
@@ -1592,6 +1610,16 @@ var add = module.exports.add = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+    
+
+    console.log(operand1);
+    console.log(operand2);
+
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
         && operand1.type !== parserUtils.typeEnum.DOUBLE)
@@ -1628,6 +1656,12 @@ var subtract = module.exports.subtract = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
         && operand1.type !== parserUtils.typeEnum.DOUBLE)
@@ -1665,6 +1699,13 @@ var multiply = module.exports.multiply = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+
+
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
         && operand1.type !== parserUtils.typeEnum.DOUBLE)
@@ -1702,6 +1743,13 @@ var divide = module.exports.divide = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+
+
     // Assure correct type of arguments
     if(operand1.type !== parserUtils.typeEnum.INT
         && operand1.type !== parserUtils.typeEnum.DOUBLE)
@@ -1741,6 +1789,12 @@ var mod = module.exports.mod = function(operand1, operand2){
     if(operand2.type === parserUtils.typeEnum.ID)
         operand2 = symbolTable.getObject(operand2.value);
     
+    if(operand1.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand1 = struct.getStructElementValue(operand1.structVariable, operand1.structMember);
+    
+    if(operand2.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        operand2 = struct.getStructElementValue(operand2.structVariable, operand2.structMember);
+
     if(operand1.type !== parserUtils.typeEnum.INT)
             throw new TypeError("Arguments of remainder must be integer numbers.");
         
@@ -1757,9 +1811,10 @@ var mod = module.exports.mod = function(operand1, operand2){
     
     return parserUtils.generateTuple(modulus, parserUtils.typeEnum.INT);
 }
-},{"./parserUtils.js":11,"./symbolTable.js":13}],9:[function(require,module,exports){
+},{"./parserUtils.js":11,"./struct.js":12,"./symbolTable.js":13}],9:[function(require,module,exports){
 var parserUtils = require('./parserUtils.js');
 var symbolTable = require('./symbolTable');
+var structManager = require('./struct.js');
 
 var compoundAssign = module.exports.compoundAssign = function(identifier, operator, tuple){
     if(operator === '=')
@@ -1772,6 +1827,13 @@ var compoundAssign = module.exports.compoundAssign = function(identifier, operat
 
 var assign = function(receiver, tuple){
 
+    // If it is an identifier, convert to its value
+    if(tuple.type === parserUtils.typeEnum.ID)
+        tuple = symbolTable.getObject(tuple.value);
+    
+    if(tuple.type === parserUtils.typeEnum.STRUCT_ELEMENT)
+        tuple = structManager.getStructElementValue(tuple.structVariable, tuple.structMember);
+
     if(receiver.type == parserUtils.typeEnum.STRUCT_ELEMENT){
         assignStructElement(receiver, tuple);
         return tuple;
@@ -1780,11 +1842,7 @@ var assign = function(receiver, tuple){
     // Check if receiver has already been defined in symbol table
     if(!symbolTable.lookUp(receiver.value))
         throw new Error('Identifier ' + receiver.value + ' is not defined.');
-    
-    // If it is an identifier, convert to its value
-    if(tuple.type === parserUtils.typeEnum.ID)
-        tuple = symbolTable.getObject(tuple.value);
-    
+
     // Compare types
     var idType = symbolTable.getType(receiver.value);
     var tupleType = tuple.type;
@@ -1801,11 +1859,7 @@ var assign = function(receiver, tuple){
 }
 
 var assignStructElement = function(receiver, exprToAssign){
-    console.log("assignStructElement");
-    console.log(receiver);
-    console.log(exprToAssign);
     var structObject = symbolTable.getObject(receiver.structVariable);
-    console.log(structObject);
 
     if(structObject === undefined)
         throw new Error("Undefined structure variable: " + receiver.structVariable);
@@ -1824,7 +1878,6 @@ var assignStructElement = function(receiver, exprToAssign){
 
     structObject.value[receiver.structMember] = parserUtils.generateTuple(exprToAssign, memberPrototypeType) ;
     symbolTable.setObject(receiver.structVariable, structObject);
-    console.log(structObject);
 }
 
 // TODO: With more types the cast is more complex
@@ -1843,7 +1896,7 @@ var isAssignable = module.exports.isAssignable = function(objectiveType , receiv
     
     return false;
 }
-},{"./parserUtils.js":11,"./symbolTable":13}],10:[function(require,module,exports){
+},{"./parserUtils.js":11,"./struct.js":12,"./symbolTable":13}],10:[function(require,module,exports){
 symbolTable = require('./symbolTable.js');
 assignment = require('./assignment.js');
 
@@ -1858,6 +1911,8 @@ simpleDeclare = module.exports.simpleDeclare = function(declarator){
         throw new Error('Multiple definition of ' + declarator.value);
     }
     
+    console.log("simpleDeclare/declarator")
+    console.log(declarator);
     symbolTable.insert(declarator.value);
 }
 
@@ -1875,6 +1930,14 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
     if(initializer.type === parserUtils.typeEnum.ID)
         initializer = symbolTable.getObject(initializer.value);
     
+    if(initializer.type === parserUtils.typeEnum.ADDRESS_TYPE)
+        initializer = initializer.value.value;
+
+    console.log("complexDeclare/declarator");
+    console.log(declarator);
+    console.log("complexDeclare/initializer");
+    console.log(initializer);
+
     symbolTable.setObject(declarator.value, initializer);
 }
 
@@ -1886,14 +1949,18 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
 * In case of struct type, all members should be initialized with undefined value.
 */
 declareType = module.exports.declareType = function(declarator, type){
-    
-    console.log("Declaration.Declare type. Declarator:" + declarator + ", type:" + type);
+
 
     // Send to struct initialization. Type is not yet assigned.
     if(type.type == parserUtils.typeEnum.STRUCT_TYPE){
         var members = initializeStruct(declarator, type);
         symbolTable.setObject(declarator.value, members);
     }
+
+     if(declarator.type == parserUtils.typeEnum.POINTER_TYPE){
+         declarePointer(declarator, type);
+         return; 
+     }
 
     // Declarator has no object assigned
     var objectAssigned = symbolTable.getObject(declarator.value);
@@ -1942,6 +2009,15 @@ initializeStruct = function(structDeclarator, structType){
 
     return parserUtils.generateTuple(structMembersInitialized, parserUtils.typeEnum.STRUCT_TYPE);
 }
+
+/* 
+* Sets an undefined object to pointer object in symbolTable.
+* Sets right type. 
+*/
+declarePointer = function(pointer, primaryType){
+    //symbolTable.setObject(pointer.value, undefined);
+    symbolTable.setType(pointer.value, {type: pointer.type, pointerType : primaryType, pointerDepth: pointer.pointerDepth});
+}
 },{"./assignment.js":9,"./symbolTable.js":13}],11:[function(require,module,exports){
 var typeEnum = module.exports.typeEnum = {
     INT: 1,
@@ -1949,7 +2025,9 @@ var typeEnum = module.exports.typeEnum = {
     ID: 3,
     STRUCT_TYPE : 4,
     STRUCT_DECLARATION_LIST : 5,
-    STRUCT_ELEMENT : 6
+    STRUCT_ELEMENT : 6,
+    ADDRESS_TYPE : 7,
+    POINTER_TYPE : 8
 };
 
 var getReversedTypeEnum = module.exports.getReversedTypeEnum = function(typeNumber){
@@ -1965,8 +2043,13 @@ var generateTuple = module.exports.generateTuple = function(val, typ){
     return Object.freeze({value: val, type: typ });
 }
 },{}],12:[function(require,module,exports){
-arguments[4][1][0].apply(exports,arguments)
-},{"dup":1}],13:[function(require,module,exports){
+var symbolTable = require('./symbolTable.js');
+
+var getStructElementValue = module.exports.getStructElementValue = function(structVariableName, elementName){
+    var structVariable = symbolTable.getObject(structVariableName);
+    return structVariable.value[elementName].value;
+}
+},{"./symbolTable.js":13}],13:[function(require,module,exports){
 parserUtils = require('./parserUtils.js');
 
 // List of symbol tables with row number associated.

@@ -12,6 +12,8 @@ simpleDeclare = module.exports.simpleDeclare = function(declarator){
         throw new Error('Multiple definition of ' + declarator.value);
     }
     
+    console.log("simpleDeclare/declarator")
+    console.log(declarator);
     symbolTable.insert(declarator.value);
 }
 
@@ -29,6 +31,14 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
     if(initializer.type === parserUtils.typeEnum.ID)
         initializer = symbolTable.getObject(initializer.value);
     
+    if(initializer.type === parserUtils.typeEnum.ADDRESS_TYPE)
+        initializer = initializer.value.value;
+
+    console.log("complexDeclare/declarator");
+    console.log(declarator);
+    console.log("complexDeclare/initializer");
+    console.log(initializer);
+
     symbolTable.setObject(declarator.value, initializer);
 }
 
@@ -40,14 +50,18 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
 * In case of struct type, all members should be initialized with undefined value.
 */
 declareType = module.exports.declareType = function(declarator, type){
-    
-    console.log("Declaration.Declare type. Declarator:" + declarator + ", type:" + type);
+
 
     // Send to struct initialization. Type is not yet assigned.
     if(type.type == parserUtils.typeEnum.STRUCT_TYPE){
         var members = initializeStruct(declarator, type);
         symbolTable.setObject(declarator.value, members);
     }
+
+     if(declarator.type == parserUtils.typeEnum.POINTER_TYPE){
+         declarePointer(declarator, type);
+         return; 
+     }
 
     // Declarator has no object assigned
     var objectAssigned = symbolTable.getObject(declarator.value);
@@ -95,4 +109,13 @@ initializeStruct = function(structDeclarator, structType){
     }
 
     return parserUtils.generateTuple(structMembersInitialized, parserUtils.typeEnum.STRUCT_TYPE);
+}
+
+/* 
+* Sets an undefined object to pointer object in symbolTable.
+* Sets right type. 
+*/
+declarePointer = function(pointer, primaryType){
+    //symbolTable.setObject(pointer.value, undefined);
+    symbolTable.setType(pointer.value, {type: pointer.type, pointerType : primaryType, pointerDepth: pointer.pointerDepth});
 }
