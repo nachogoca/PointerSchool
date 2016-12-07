@@ -12,8 +12,6 @@ simpleDeclare = module.exports.simpleDeclare = function(declarator){
         throw new Error('Multiple definition of ' + declarator.value);
     }
     
-    console.log("simpleDeclare/declarator")
-    console.log(declarator);
     symbolTable.insert(declarator.value);
 }
 
@@ -33,11 +31,6 @@ complexDeclare = module.exports.complexDeclare = function(declarator, initialize
     
     if(initializer.type === parserUtils.typeEnum.ADDRESS_TYPE)
         initializer = initializer.value.value;
-
-    console.log("complexDeclare/declarator");
-    console.log(declarator);
-    console.log("complexDeclare/initializer");
-    console.log(initializer);
 
     symbolTable.setObject(declarator.value, initializer);
 }

@@ -6,9 +6,7 @@ var compoundAssign = module.exports.compoundAssign = function(identifier, operat
     if(operator === '=')
         return assign(identifier, tuple);
     else
-        throw new TypeError('Assignment operator ' + operator + ' not supported');
-    
-    
+        throw new TypeError('Assignment operator ' + operator + ' not supported');  
 }
 
 var assign = function(receiver, tuple){
@@ -25,6 +23,11 @@ var assign = function(receiver, tuple){
         return tuple;
     }
 
+    if(tuple.type == parserUtils.typeEnum.ADDRESS_TYPE){
+        assignPointer(receiver, tuple);
+        return symbolTable.getObject(receiver.value);
+    }
+
     // Check if receiver has already been defined in symbol table
     if(!symbolTable.lookUp(receiver.value))
         throw new Error('Identifier ' + receiver.value + ' is not defined.');
@@ -34,7 +37,7 @@ var assign = function(receiver, tuple){
     var tupleType = tuple.type;
     
     if(!isAssignable(idType.type, tupleType))
-        throw new Error('Type ' + parserUtils.getReversedTypeEnum(tupleType) + ' can not be assigned to type ' + parserUtils.getReversedTypeEnum(idType));
+        throw new Error('Type ' + tupleType + ' can not be assigned to type ' + idType);
     
     // Cast according to type
     var objectToAssign = cast(symbolTable.getType(receiver.value), tuple);
@@ -66,9 +69,13 @@ var assignStructElement = function(receiver, exprToAssign){
     symbolTable.setObject(receiver.structVariable, structObject);
 }
 
+var assignPointer = function(receiver, exprToAssign){
+    symbolTable.setObject(receiver.value, exprToAssign.value.value);
+}
+
 // TODO: With more types the cast is more complex
 var cast = module.exports.cast = function(objectiveType, object){
-    return parserUtils.generateTuple(object.value, objectiveType);
+    return parserUtils.generateTuple(receiver.value, object.value, objectiveType);
 }
 
 var isAssignable = module.exports.isAssignable = function(objectiveType , receivedType){
