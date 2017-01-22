@@ -69,11 +69,16 @@
             
                  <textarea id="code">
 int main( ) {
-  int a = 22;
-  int * b;
+  	int a = 22;
+  	int c;
+	int * b;
+  	b = &a;
+	a = 12;			  
+  	c = *b;
 }
 
-                </textarea> 
+								                
+		 </textarea> 
                 
             
             <form >

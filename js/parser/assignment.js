@@ -10,6 +10,11 @@ var compoundAssign = module.exports.compoundAssign = function(identifier, operat
 }
 
 var assign = function(receiver, tuple){
+	console.log('assign function');
+	console.log('receiver');
+	console.log(receiver);
+	console.log('tuple');
+	console.log(tuple);
 
     // If it is an identifier, convert to its value
     if(tuple.type === parserUtils.typeEnum.ID)
@@ -35,9 +40,14 @@ var assign = function(receiver, tuple){
     // Compare types
     var idType = symbolTable.getType(receiver.value);
     var tupleType = tuple.type;
-    
-    if(!isAssignable(idType.type, tupleType))
-        throw new Error('Type ' + tupleType + ' can not be assigned to type ' + idType);
+   
+	console.log(tuple);
+
+    if(!isAssignable(idType.type, tupleType)){
+	    console.log(idType);
+	    console.log(tupleType);
+	    throw new Error('Type ' + tupleType + ' can not be assigned to type ' + idType);
+    }	
     
     // Cast according to type
     var objectToAssign = cast(symbolTable.getType(receiver.value), tuple);
@@ -75,7 +85,7 @@ var assignPointer = function(receiver, exprToAssign){
 
 // TODO: With more types the cast is more complex
 var cast = module.exports.cast = function(objectiveType, object){
-    return parserUtils.generateTuple(receiver.value, object.value, objectiveType);
+    return parserUtils.generateTuple(object.value, objectiveType);
 }
 
 var isAssignable = module.exports.isAssignable = function(objectiveType , receivedType){

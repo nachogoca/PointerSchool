@@ -165,10 +165,18 @@ unary_expression
 //	| DEC_OP unary_expression // Not implemented
 	| unary_operator cast_expression 
 	{
-		if($unary_operator === '&')
+		if($unary_operator === '&') {
+
 			$$ = parserUtils.generateTuple($cast_expression, parserUtils.typeEnum.ADDRESS_TYPE);
-		else
+}
+		else if($unary_operator === '*') {
+			console.log('Unary operator');
+			$$ = pointer.getValue($cast_expression);
+		}
+		else {
+
 			throw new Error("Unary operator " + $unary_operator + " not supported");
+		}
 	}
 	| SIZEOF unary_expression // Not implemented yet
 	| SIZEOF '(' type_name ')' // Not implemented yet
@@ -271,7 +279,18 @@ assignment_expression
 	: conditional_expression -> $1
 	| unary_expression assignment_operator assignment_expression
     {
+	//console.log("Assigment expression");
+	//console.log($unary_expression);
+	//console.log($assignment_operator);
+	//console.log($assignment_expression);
+
         $$ = assignment.compoundAssign($unary_expression, $assignment_operator, $assignment_expression);
+
+	//console.log($unary_expression);
+	//console.log($assignment_operator);
+	//console.log($assignment_expression);
+
+
     }
 	;
 
@@ -619,3 +638,4 @@ var arithmetic = require('./arithmetic.js');
 var assignment = require('./assignment.js');
 var declaration = require('./declaration.js');
 var struct = require('./struct.js');
+var pointer = require('./pointer.js');
