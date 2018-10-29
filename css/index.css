@@ -1,27 +1,51 @@
-body {
-    background-color: lightslategray;
+body,
+html {
+  height: 100%;
+  margin: 0;
 }
+
+.container {
+  height: 100%;
+  padding: 1rem;
+  background-color: lightslategray;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.container > * {
+  flex-grow: 1;
+  margin: 1rem;
+}
+
+.visualization {
+  display: flex;
+  flex-direction: column;
+}
+
 #notebook {
-    float: left;
-    width: 45%;
+  width: 45%;
 }
+
 #paper {
-    background-color: white;
-    float: right;
-    width: 50%;
-    height: 500px;
+  background-color: #fff;
+  flex-basis: 50%;
+  height: 500px;
 }
+
 #buttons {
-    float: right;
+  align-self: flex-end;
 }
+
 .CodeMirror {
-    height: 400px;
-    border: 1px solid #ddd;
+  height: 400px;
+  border: 1px solid #ddd;
 }
+
 .CodeMirror-scroll {
-    max-height: 500px;
+  max-height: 500px;
 }
+
 .CodeMirror pre {
-    padding-left: 0px;
-    line-height: 1.25;
+  line-height: 1.25;
 }
