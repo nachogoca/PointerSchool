@@ -67,31 +67,32 @@
 </head>
 
 <body>
-    <section id="notebook">
-        <textarea id="code">
-            int main( ) {
-  	            int a = 22;
-  	            int c;
-	            int * b;
-  	            b = &a;
-	            a = 12;			  
-  	            c = *b;
-            }					                
-		 </textarea>
-        <form>
-            <textarea id="console"> Welcome to console. </textarea>
-        </form>
-    </section>
-    <div id="paper"></div>
-    <table id="buttons">
-        <tr>
-            <td><button id="visualize">Visualize execution</button></td>
-            <td><button id="back">Back</button></td>
-            <td><button id="forward">Forward</button></td>
-            <td><button id="edit">Edit code</button></td>
-        </tr>
-    </table>
-
+    <div class="container">
+        <section id="notebook">
+            <textarea id="code">
+              int main( ) {
+    	            int a = 22;
+    	            int c;
+  	                int * b;
+    	            b = &a;
+  	                a = 12;
+    	            c = *b;
+              }
+            </textarea>
+            <form>
+                <textarea id="console"> Welcome to console. </textarea>
+            </form>
+        </section>
+        <section class="visualization">
+            <div id="paper"></div>
+            <div id='buttons'>
+              <button id="visualize">Visualize execution</button>
+              <button id="back">Back</button>
+              <button id="forward">Forward</button>
+              <button id="edit">Edit code</button>
+            </div>
+        </section>
+    </div>
 </body>
 </script>
 
